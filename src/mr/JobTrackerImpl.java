@@ -7,6 +7,6 @@ package mr;
  * @author Nicolas_Yu
  *
  */
-public class Mapper {
-	
+public class JobTrackerImpl {
+
 }
