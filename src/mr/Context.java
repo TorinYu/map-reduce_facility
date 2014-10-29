@@ -8,5 +8,5 @@ package mr;
  *
  */
 public class Context {
-
+	
 }

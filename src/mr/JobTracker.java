@@ -18,10 +18,15 @@ public interface JobTracker extends Serializable, Remote{
 	
 	public void sendHeartbeat();
 	
-	public void describe_jobs();
+	public void describeJobs();
 	
-	public void describe_job(Job job);
+	public void describeJob(Job job);
 	
+	public void register(String hostId, TaskTracker taskTracker);
+	
+	/*
+	 * terminate mapreduce framework
+	 */
 	public void terminate();
 	
 	public void kill();
