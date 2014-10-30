@@ -59,7 +59,6 @@ public class DataNodeImpl implements DataNode {
 					this.files.add(previous);
 				}
 			}
-
 		} else {
 			System.out.println("Please input a valid directory path!");
 		}
@@ -68,5 +67,25 @@ public class DataNodeImpl implements DataNode {
 	public void uploadFile(String path, String name) {
 
 	}
+
+	@Override
+	public void createFileBlock(String filePath, String alias, BlockInfo block) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String fetchBlock(String fileName, int blockID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void terminate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
 
 }

@@ -1,6 +1,5 @@
 package dfs;
 
-import java.io.File;
 import java.rmi.Remote;
 
 /**
@@ -26,14 +25,22 @@ public interface NameNode extends Remote {
 	 * @param fileName
 	 * @return true if the update succeeds or false if it fails
 	 */
-	public boolean uploadFile(String fileName);
+	public void uploadFile(String fileName, String alias);
 
 	/**
 	 * 
 	 * @param fileName
-	 * @return a file corresponding to the file name in the dfs.
+	 * @return a data node that stores the required block on that data node.
 	 */
-	public File downloadFile(String fileName);
+	public DataNode searchDataNode(String fileName, int blockId);
+
+	/**
+	 * Use this function to download files back.
+	 * 
+	 * @param fileName
+	 * @return
+	 */
+	public String downloadFile(String fileName);
 
 	/**
 	 * Stop specific data node
@@ -41,13 +48,13 @@ public interface NameNode extends Remote {
 	 * @param datanode
 	 * @return
 	 */
-	public boolean terminate(int datanode);
+	public void terminate(int datanode);
 
 	/**
 	 * Stop the name node and all data node that registers here.
 	 * 
-	 * @return
+	 * @return boolean w
 	 */
-	public boolean terminate();
+	public void terminate();
 
 }

@@ -14,11 +14,14 @@ public class NameNodeImpl implements NameNode {
 	private int id = 0;
 	private String dfsPath = "/tmp/dfs/";
 	private int replication = 1;
-	private HashMap<String, FileMeta> files;
+	private HashMap<String, FileInfo> files;
+	private long blockSize = 0;
 
-	public NameNodeImpl(int portNumber, String dfs, int replication) {
+	public NameNodeImpl(int portNumber, String dfs, int replication,
+			long blockSize) {
 		this.dfsPath = dfs;
 		this.replication = replication;
+		this.blockSize = blockSize;
 
 		try {
 			this.registry = LocateRegistry.createRegistry(portNumber);
@@ -52,27 +55,32 @@ public class NameNodeImpl implements NameNode {
 	}
 
 	@Override
-	public boolean uploadFile(String fileName) {
+	public void terminate(int datanode) {
 		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override
-	public File downloadFile(String fileName) {
+	public void terminate() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void uploadFile(String fileName, String alias) {
+		File file = new File(fileName);
+		long length = file.length();
+
+	}
+
+	@Override
+	public DataNode searchDataNode(String fileName, int blockId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean terminate(int datanode) {
+	public String downloadFile(String fileName) {
 		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean terminate() {
-		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
 }
