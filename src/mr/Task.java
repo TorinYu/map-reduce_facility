@@ -27,6 +27,9 @@ public class Task implements Runnable{
 	String output_path = null;
 	String readFromHost = null;
 	
+	Type.TASK_TYPE type = null;
+	
+	NameNode nameNode = null;
 	
 	Type.TASK_TYPE taskType = null;
 	Registry hdfs_registry = null;
@@ -37,7 +40,7 @@ public class Task implements Runnable{
 		this.task_id = task_id;
 		try {
 			hdfs_registry = LocateRegistry.getRegistry(host, port);
-			
+			nameNode = hdfs_registry.lookup("NameNode");
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,6 +55,10 @@ public class Task implements Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		if (type == TASK_TYPE.Mapper) {
+			Mapper<Object, Object, Object, Object> mapClass = mapper.newInstance();
+			
+		}
 		
 	}
 

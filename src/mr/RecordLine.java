@@ -3,6 +3,8 @@
  */
 package mr;
 
+import java.util.LinkedList;
+
 import mr.io.Writable;
 
 /**
@@ -15,9 +17,9 @@ public class RecordLine implements Comparable<RecordLine> {
 	private Writable key;
 	private Iterable<Writable> value;
 	
-	public RecordLine(Writable key, Iterable<Writable> value) {
+	public RecordLine(Writable key) {
 		this.key = key;
-		this.value = value;
+		this.value = new LinkedList<Writable>();
 	}
 	
 	
@@ -60,6 +62,10 @@ public class RecordLine implements Comparable<RecordLine> {
 	 */
 	public void setValue(Iterable<Writable> value) {
 		this.value = value;
+	}
+	
+	public void addValue(Writable value) {
+		((LinkedList<Writable>)value).add(value);
 	}
 
 }

@@ -16,4 +16,13 @@ public class Mapper <K1, V1, K2, V2> implements Serializable{
 	public void map(K1 k1, V1 v1, Context context) {
 		
 	}
+	
+//	private class Context {
+//		private String jobId = null;
+//		private String taskId = null;
+//		private int reduceNum = 0;
+//		
+//	}
+	
+	
 }
