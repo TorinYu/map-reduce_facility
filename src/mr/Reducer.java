@@ -82,4 +82,46 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 		}
 	}
 
+	/**
+	 * @return the shuffleDir
+	 */
+	public String getShuffleDir() {
+		return shuffleDir;
+	}
+
+	/**
+	 * @param shuffleDir the shuffleDir to set
+	 */
+	public void setShuffleDir(String shuffleDir) {
+		this.shuffleDir = shuffleDir;
+	}
+
+	/**
+	 * @return the records
+	 */
+	public PriorityQueue<RecordLine> getRecords() {
+		return records;
+	}
+
+	/**
+	 * @param records the records to set
+	 */
+	public void setRecords(PriorityQueue<RecordLine> records) {
+		this.records = records;
+	}
+
+	/**
+	 * @return the reduceLines
+	 */
+	public ArrayList<RecordLine> getReduceLines() {
+		return reduceLines;
+	}
+
+	/**
+	 * @param reduceLines the reduceLines to set
+	 */
+	public void setReduceLines(ArrayList<RecordLine> reduceLines) {
+		this.reduceLines = reduceLines;
+	}
+
 }
