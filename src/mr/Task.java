@@ -24,6 +24,8 @@ public class Task implements Runnable{
 	Class<? extends Mapper> mapper = null;
 	Class<? extends Reducer> reducer = null;
 	
+	
+	
 	String jobId = null;
 	String taskId = null;
 	String hostId = null;
