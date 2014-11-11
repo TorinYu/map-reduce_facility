@@ -7,6 +7,7 @@ import java.util.concurrent.Future;
 
 import mr.Type.JOB_STATUS;
 import mr.Type.MESSAGE_TYPE;
+import mr.Type.TASK_STATUS;
 import mr.Type.TASK_TYPE;
 
 /**
@@ -20,7 +21,7 @@ public class Message {
     private String jobId = null; 
     private String taskId = null;
     private JOB_STATUS jobStat = null;
-    private TASK_TYPE taskStat = null;
+    private TASK_STATUS taskStat = null;
     //private String blk_fpath = null;
     private String hostId = null;
     private Integer aval_procs = -1;
@@ -104,13 +105,13 @@ public class Message {
 	/**
 	 * @return the taskStat
 	 */
-	public TASK_TYPE getTaskStat() {
+	public TASK_STATUS getTaskStat() {
 		return taskStat;
 	}
 	/**
 	 * @param taskStat the taskStat to set
 	 */
-	public void setTaskStat(TASK_TYPE taskStat) {
+	public void setTaskStat(TASK_STATUS taskStat) {
 		this.taskStat = taskStat;
 	}
 	/**
