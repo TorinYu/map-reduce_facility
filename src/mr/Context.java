@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.TreeMap;
 
+import com.sun.xml.internal.bind.v2.TODO;
+
 import mr.Type.TASK_TYPE;
 import mr.io.TextWritable;
 import mr.io.Writable;
@@ -89,7 +91,8 @@ public class Context {
 
 		HashMap<Integer, BufferedWriter> partitionFiles = new HashMap<Integer, BufferedWriter>();
 		for (int i = 0; i < reduceNum; i++) {
-			partitionFiles.put(i, new BufferedWriter(new FileWriter(partitionOutPath + taskId + "#" + i)));
+			partitionFiles.put(i, new BufferedWriter(new FileWriter(partitionOutPath + taskId + "#" + i))); 
+			//TODO figure out how to find the map output  
 		}
 		
 		while (!records.isEmpty()) {
