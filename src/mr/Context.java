@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.TreeMap;
 
+import com.sun.xml.internal.bind.v2.TODO;
+
 import mr.Type.TASK_TYPE;
 import mr.io.TextWritable;
 import mr.io.Writable;
@@ -34,22 +36,29 @@ public class Context {
 	private String partitionOutPath = "";
 	private int bufferSize = 0;
 
-	private TreeMap<RecordLine, Integer> mapContent = new TreeMap<RecordLine, Integer>();
+	private TreeMap<RecordLine, Integer> mapContent = new TreeMap<RecordLine, Integer>();  //Map output small partitions 
 	
-
-
-
+	/**
+	 * Constructor
+	 * @param jobId
+	 * @param taskId
+	 * @param reduceNum
+	 * @param partitionOutPath
+	 * @param type
+	 */
 	public Context(String jobId, String taskId, int reduceNum, String partitionOutPath, TASK_TYPE type) {
 		this.jobId = jobId;
 		this.taskId = taskId;
 		this.reduceNum = reduceNum;
 		this.taskType = type;
 		this.partitionOutPath = partitionOutPath;
-		this.mapContentFilePath = "/tmp/" + taskId;
+		this.mapContentFilePath = "/tmp/" + taskId + "tmp/";  
 		this.bufferSize = 900;
 	}
 
-
+	/*
+	 * Combined small map partitions to (reduceNum)Map outputs for Reducer
+	 */
 	public void partionMapContent() throws IOException {
 
 		File writeOutPath = new File(partitionOutPath);
@@ -82,7 +91,8 @@ public class Context {
 
 		HashMap<Integer, BufferedWriter> partitionFiles = new HashMap<Integer, BufferedWriter>();
 		for (int i = 0; i < reduceNum; i++) {
-			partitionFiles.put(i, new BufferedWriter(new FileWriter(partitionOutPath + taskId + "#" + i)));
+			partitionFiles.put(i, new BufferedWriter(new FileWriter(partitionOutPath + taskId + "#" + i))); 
+			//TODO figure out how to find the map output  
 		}
 		
 		while (!records.isEmpty()) {
@@ -104,6 +114,9 @@ public class Context {
 
 	}
 
+	/**
+	 * write the content to file when buffer is full for Map 
+	 */
 	private void writeToFile() {
 		File pathFile = new File(mapContentFilePath);
         if (!pathFile.exists())
@@ -125,6 +138,11 @@ public class Context {
         }
 	}
 	
+	/**
+	 * Write a record to Context 
+	 * @param key
+	 * @param value
+	 */
 	public void write(Writable key, Writable value) {
 		RecordLine record = new RecordLine(key);
         record.addValue(value);

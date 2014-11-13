@@ -8,9 +8,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.HashMap;
 import java.util.UUID;
 
 import mr.Type.JOB_STATUS;
+import mr.Type.TASK_STATUS;
 import dfs.NameNode;
 
 /**
@@ -31,6 +33,7 @@ public class Job implements Serializable{
 	
 	Registry registry = null;
 	
+	String fileName = null;
 	
 	String inputFilePath = null;
 	String outputFilePath = null;
@@ -42,12 +45,17 @@ public class Job implements Serializable{
 	int mapNum = 0;
 	int reduceNum = 0; 
 	
-	int map_ct = 0;
-	int reduce_ct = 0;
-	
 	JOB_STATUS jobStatus = null;
 	
+	// KEY:map/reduce id VALUE:status
+	HashMap<String, TASK_STATUS> mapper_status = new HashMap<String, TASK_STATUS>();
+    HashMap<String, TASK_STATUS> reducer_status = new HashMap<String, TASK_STATUS>();
 	
+	/**
+	 * Constructor
+	 * @param host  MR's host name
+	 * @param port	MR's port name 
+	 */
 	public Job(String host, int port) {
 		try {
 			registry = LocateRegistry.getRegistry(host, port);
@@ -62,7 +70,10 @@ public class Job implements Serializable{
 		
 	}
 
-	public void submit(){
+	/*
+	 * Submit this Job to JobTracker 
+	 */
+	public void submit() throws RemoteException{
 		jobTracker.schedule(this);
 	}
 
@@ -244,38 +255,6 @@ public class Job implements Serializable{
 
 
 	/**
-	 * @return the map_ct
-	 */
-	public int getMap_ct() {
-		return map_ct;
-	}
-
-
-	/**
-	 * @param map_ct the map_ct to set
-	 */
-	public void setMap_ct(int map_ct) {
-		this.map_ct = map_ct;
-	}
-
-
-	/**
-	 * @return the reduce_ct
-	 */
-	public int getReduce_ct() {
-		return reduce_ct;
-	}
-
-
-	/**
-	 * @param reduce_ct the reduce_ct to set
-	 */
-	public void setReduce_ct(int reduce_ct) {
-		this.reduce_ct = reduce_ct;
-	}
-
-
-	/**
 	 * @return the jobStatus
 	 */
 	public JOB_STATUS getJobStatus() {
@@ -302,5 +281,61 @@ public class Job implements Serializable{
 	 */
 	public void setJobId(String jobId) {
 		this.jobId = jobId;
+	}
+
+	/**
+	 * @return the mapper_status
+	 */
+	public HashMap<String, TASK_STATUS> getMapper_status() {
+		return mapper_status;
+	}
+
+	/**
+	 * @param mapper_status the mapper_status to set
+	 */
+	public void setMapper_status(String mapId, TASK_STATUS status) {
+		this.mapper_status.put(mapId, status);
+	}
+
+	/**
+	 * @return the reducer_status
+	 */
+	public HashMap<String, TASK_STATUS> getReducer_status() {
+		return reducer_status;
+	}
+
+	/**
+	 * @param reducer_status the reducer_status to set
+	 */
+	public void setReducer_status(String reduceId, TASK_STATUS status) {
+		this.reducer_status.put(reduceId, status);
+	}
+	
+	/**
+	 * Increase the num of Mapper 
+	 */
+	public void addMapNum() {
+		this.mapNum++;
+	}
+	
+	/**
+	 * Increase the num of Mapper 
+	 */
+	public void addReduceNum() {
+		this.reduceNum++;
+	}
+
+	/**
+	 * @return the fileName
+	 */
+	public String getFileName() {
+		return fileName;
+	}
+
+	/**
+	 * @param fileName the fileName to set
+	 */
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 }

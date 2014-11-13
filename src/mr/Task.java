@@ -24,14 +24,18 @@ public class Task implements Runnable{
 	Class<? extends Mapper> mapper = null;
 	Class<? extends Reducer> reducer = null;
 	
+	
+	
 	String jobId = null;
 	String taskId = null;
 	String hostId = null;
-	String blockId = null;
+	String blockId = null; 
 	int reduceNum = 0;
 	String inputPath = null;
 	String outputPath = null;
 	String readFromHost = null;
+	
+	String readDir = null;
 	
 	Type.TASK_TYPE type = null;
 	
@@ -353,6 +357,22 @@ public class Task implements Runnable{
 	 */
 	public void setHdfsRegistry(Registry hdfsRegistry) {
 		this.hdfsRegistry = hdfsRegistry;
+	}
+
+
+	/**
+	 * @return the readDir
+	 */
+	public String getReadDir() {
+		return readDir;
+	}
+
+
+	/**
+	 * @param readDir the readDir to set
+	 */
+	public void setReadDir(String readDir) {
+		this.readDir = readDir;
 	}
 	
 }
