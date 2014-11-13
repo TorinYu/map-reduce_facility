@@ -74,7 +74,7 @@ public class Task implements Runnable{
 				String outputPath = "/tmp" + jobId + "/" + hostId + '/';
 				Context context = new Context(jobId, taskId, reduceNum, outputPath, TASK_TYPE.Mapper);
 				// Waiting for JerrySun's API
-				DataNode dataNode = nameNode.getDataNode(readFromHost);
+				DataNode dataNode = nameNode.fetchDataNode(readFromHost);
 				String content = dataNode.fetchBlock(blockId);
 				String[] lines = content.split("\\n");
 				for (int i = 0; i < lines.length; i++) {

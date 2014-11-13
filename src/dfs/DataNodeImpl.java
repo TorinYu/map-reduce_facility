@@ -30,7 +30,7 @@ public class DataNodeImpl implements DataNode {
 			Registry registry = LocateRegistry.getRegistry(registryHost,
 					registryPort);
 			NameNode namenode = (NameNode) registry.lookup("namenode");
-			namenode.registerDataNode(this);
+			namenode.register(this);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {

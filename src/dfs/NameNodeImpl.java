@@ -7,6 +7,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +22,17 @@ public class NameNodeImpl implements NameNode {
 	private HashMap<String, FileInfo> files;
 	private int blockSize;
 	private boolean isTerminating = false;
-	private Map<String, List<Integer>> fileBlocks;
+	private Map<String, List<Integer>> fileBlocks; // map from file name to
+													// blockIds.
+	private int blockId = 0;
 
 	public NameNodeImpl(int portNumber, String dfs, int replication,
 			int blockSize) {
 		this.dfsPath = dfs;
 		this.replication = replication;
 		this.blockSize = blockSize;
+		this.fileBlocks = new HashMap<String, List<Integer>>();
+
 		try {
 			this.registry = LocateRegistry.createRegistry(portNumber);
 			this.registry.bind("namenode", this);
@@ -46,32 +51,40 @@ public class NameNodeImpl implements NameNode {
 	}
 
 	public void uploadFile(String fileName) {
+		if (fileBlocks.containsKey(fileName)) {
+			System.out.println("File Already Exists. Won't overwrite!");
+			return;
+		}
 		File file = new File(fileName);
 		long length = file.length();
 		int blockCount = (int) Math.round(length * 1.0 / this.blockSize);
-
-	}
-
-	public DataNode searchDataNode(String fileName, int blockId) {
-		DataNode node = null;
-		if (files.containsKey(fileName)) {
-			FileInfo fileInfo = files.get(fileName);
-			BlockInfo b = fileInfo.getBlocks().get(blockId);
-			Random r = new Random();
-			int index = r.nextInt(b.getDataNodeIds().size());
-			int nodeNum = b.getDataNodeIds().get(index);
-			try {
-				node = (DataNode) this.registry.lookup(DATA + nodeNum);
-			} catch (AccessException e) {
-				e.printStackTrace();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			} catch (NotBoundException e) {
-				e.printStackTrace();
-			}
+		int startId = this.blockId;
+		int endId = this.blockId;
+		synchronized (this) {
+			startId = this.blockId;
+			this.blockId += blockCount;
+			endId = this.blockId;
 		}
-		return node;
+
+		List<Integer> ids = new ArrayList<>();
+		for (int i = startId; i < endId; i++) {
+			ids.add(i);
+		}
+		fileBlocks.put(fileName, ids);
+		// next we should write the file on choosing nodes.
 	}
+
+	/*
+	 * public DataNode searchDataNode(String fileName, int blockId) { DataNode
+	 * node = null; if (files.containsKey(fileName)) { FileInfo fileInfo =
+	 * files.get(fileName); BlockInfo b = fileInfo.getBlocks().get(blockId);
+	 * Random r = new Random(); int index =
+	 * r.nextInt(b.getDataNodeIds().size()); int nodeNum =
+	 * b.getDataNodeIds().get(index); try { node = (DataNode)
+	 * this.registry.lookup(DATA + nodeNum); } catch (AccessException e) {
+	 * e.printStackTrace(); } catch (RemoteException e) { e.printStackTrace(); }
+	 * catch (NotBoundException e) { e.printStackTrace(); } } return node; }
+	 */
 
 	@Override
 	public int register(DataNode node) throws RemoteException {
@@ -110,10 +123,12 @@ public class NameNodeImpl implements NameNode {
 	public int createFile(String filename, int replicas) throws RemoteException {
 		if (isTerminating)
 			throw new RemoteException("DFS terminating");
+		
 		int actualRep = replicas;
 		if (replicas > this.replication) {
 			actualRep = this.replication;
 		}
+		
 		
 		return actualRep;
 	}

@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import dfs.ClassDownloader;
 import mr.Type.MESSAGE_TYPE;
 import mr.Type.TASK_STATUS;
 import mr.Type.TASK_TYPE;
@@ -472,6 +473,12 @@ public class TaskTrackerImpl implements TaskTracker, Runnable{
         int reducer_ct = Integer.valueOf(args[6]);
         TaskTrackerImpl tt = new TaskTrackerImpl(registryHost, mrPort, dfsPort, selfPort, id, reducer_ct, read_dir);
         tt.initialize();
+	}
+
+	@Override
+	public void startReducer() {
+		// TODO Auto-generated method stub
+		
 	}
 	 
 }
