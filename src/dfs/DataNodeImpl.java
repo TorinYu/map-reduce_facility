@@ -18,7 +18,7 @@ public class DataNodeImpl implements DataNode {
 
 	public DataNodeImpl(int id, String dir, String registryHost,
 			int registryPort) {
-		this.id = id;
+		this.setId(id);
 		this.dir = dir;
 		this.registryHost = registryHost;
 		this.registryPort = registryPort;
@@ -69,12 +69,6 @@ public class DataNodeImpl implements DataNode {
 	}
 
 	@Override
-	public void createFileBlock(String filePath, String alias, BlockInfo block) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public String fetchBlock(String fileName, int blockID) {
 		// TODO Auto-generated method stub
 		return null;
@@ -83,9 +77,35 @@ public class DataNodeImpl implements DataNode {
 	@Override
 	public void terminate() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	
+	@Override
+	public void heartBeat() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public int getId() {
+		return id;
+	}
+
+	@Override
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	@Override
+	public void createBlock(String filePath, String alias, int id) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public byte[] fetchByteBlock(String fileName, int blockID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

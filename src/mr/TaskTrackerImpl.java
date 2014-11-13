@@ -128,6 +128,12 @@ public class TaskTrackerImpl implements TaskTracker, Runnable{
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void startMapper() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	 
 }

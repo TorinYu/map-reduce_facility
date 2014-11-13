@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileInfo implements Serializable {
+	private static final long serialVersionUID = -2936352445461379648L;
 	private String fileName;
 	private ArrayList<BlockInfo> blocks;// make sure it is a sorted list.
 
