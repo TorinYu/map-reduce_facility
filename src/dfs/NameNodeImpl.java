@@ -83,6 +83,7 @@ public class NameNodeImpl implements NameNode {
 				meta.setState(true);
 				this.dataNodeHeap.add(meta);
 				this.dataNodeMap.put(id, meta);
+				System.out.println("Register DataNode #" + id);
 			} catch (AccessException e) {
 				e.printStackTrace();
 				return -1;
@@ -140,6 +141,9 @@ public class NameNodeImpl implements NameNode {
 		if (isTerminating)
 			throw new RemoteException("DFS terminating");
 		synchronized (this) {
+			if (!this.blockInfos.containsKey(blockId)) {
+				this.blockInfos.put(blockId, new BlockInfo(blockId));
+			}
 			this.blockInfos.get(blockId).getDataNodeIds().add(dataNodeId);
 			this.dataNodeMap.get(dataNodeId).getBlockIds().add(blockId);
 		}

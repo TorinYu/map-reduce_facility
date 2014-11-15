@@ -123,14 +123,16 @@ public interface NameNode extends Remote {
 	 * @param fileName
 	 * @param fileInfo
 	 */
-	public void updateFileInfos(String fileName, FileInfo fileInfo);
-	
+	public void updateFileInfos(String fileName, FileInfo fileInfo)
+			throws RemoteException;
+
 	/**
 	 * Check the health of all the data nodes. Mark failure ones as dead.
-	 * @throws RemoteException 
+	 * 
+	 * @throws RemoteException
 	 * 
 	 * 
 	 */
 	public void healthCheck() throws RemoteException;
-	
+
 }

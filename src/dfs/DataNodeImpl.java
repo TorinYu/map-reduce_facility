@@ -67,7 +67,7 @@ public class DataNodeImpl implements DataNode {
 	}
 
 	@Override
-	public void terminate() {
+	public void terminate() throws RemoteException {
 		try {
 			UnicastRemoteObject.unexportObject(this, true);
 		} catch (NoSuchObjectException e) {
@@ -76,27 +76,27 @@ public class DataNodeImpl implements DataNode {
 	}
 
 	@Override
-	public void heartBeat() {
+	public void heartBeat() throws RemoteException {
 		// should do nothing
 	}
 
 	@Override
-	public int getId() {
+	public int getId() throws RemoteException {
 		return id;
 	}
 
 	@Override
-	public void setId(int id) {
+	public void setId(int id) throws RemoteException {
 		this.id = id;
 	}
 
 	@Override
-	public void createBlock(int blockId, String content) {
+	public void createBlock(int blockId, String content) throws RemoteException {
 		createBlock(blockId, content.getBytes(Charset.forName("UTF-8")));
 	}
 
 	@Override
-	public void createBlock(int blockId, byte[] content) {
+	public void createBlock(int blockId, byte[] content) throws RemoteException {
 		FileOutputStream fos;
 		try {
 			fos = new FileOutputStream(new File(dir + blockId));
@@ -112,13 +112,14 @@ public class DataNodeImpl implements DataNode {
 	}
 
 	@Override
-	public void createBlock(int blockId, DataNode dataNode) {
+	public void createBlock(int blockId, DataNode dataNode)
+			throws RemoteException {
 		byte[] content = dataNode.fetchByteBlock(blockId);
 		this.createBlock(blockId, content);
 	}
 
 	@Override
-	public byte[] fetchByteBlock(int blockId) {
+	public byte[] fetchByteBlock(int blockId) throws RemoteException {
 		try {
 			File file = new File(dir + blockId);
 			byte[] content = new byte[(int) file.length()];
@@ -136,7 +137,7 @@ public class DataNodeImpl implements DataNode {
 	}
 
 	@Override
-	public String fetchStringBlock(int blockId) {
+	public String fetchStringBlock(int blockId) throws RemoteException {
 		byte[] bytes = this.fetchByteBlock(blockId);
 		if (bytes == null) {
 			return null;
@@ -146,7 +147,7 @@ public class DataNodeImpl implements DataNode {
 	}
 
 	@Override
-	public String getFolder() {
+	public String getFolder() throws RemoteException {
 		return this.dir;
 	}
 

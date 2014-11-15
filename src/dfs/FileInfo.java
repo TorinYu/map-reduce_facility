@@ -9,7 +9,7 @@ public class FileInfo implements Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -6762648001981764002L;
 	private String fileName;
 	private int replicas;
 	private List<Integer> blockIds;
@@ -39,9 +39,10 @@ public class FileInfo implements Serializable {
 	public void setReplicas(int replicas) {
 		this.replicas = replicas;
 	}
-	
-	public String toString(){
-		return this.fileName+"\t"+this.replicas+"\t" +this.blockIds.toString();
+
+	public String toString() {
+		return this.fileName + "\t" + this.replicas + "\t"
+				+ this.blockIds.toString();
 	}
 
 }

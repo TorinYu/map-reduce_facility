@@ -18,7 +18,7 @@ public class BlockInfo implements Serializable{
 	private int blockId;
 	private List<Integer> dataNodeIds;
 
-	public BlockInfo(int blockId, String filename) {
+	public BlockInfo(int blockId) {
 		super();
 		this.setBlockId(blockId);
 		this.setDataNodeIds(new ArrayList<Integer>());
