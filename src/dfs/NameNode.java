@@ -1,6 +1,5 @@
 package dfs;
 
-import java.io.File;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -10,7 +9,7 @@ import java.util.Map;
  * Name Node is in charge of storing data node's information. And also
  * responsible for communication when trying to uploading/ downloading files.
  * 
- * @author Jerry
+ * @author Jerry Sun
  * 
  */
 public interface NameNode extends Remote {
@@ -41,10 +40,11 @@ public interface NameNode extends Remote {
 	 *            (file path and) filename
 	 * @param replicas
 	 *            requested replication factor
-	 * @return actual replication factor
+	 * @return a FileInfo records the information of the file to be created.s
 	 * @throws RemoteException
 	 */
-	public int createFile(String filename, int replicas) throws RemoteException;
+	public FileInfo createFile(String filename, int replicas)
+			throws RemoteException;
 
 	/**
 	 * Retrieve the default block size
@@ -55,26 +55,16 @@ public interface NameNode extends Remote {
 	public int getBlockSize() throws RemoteException;
 
 	/**
-	 * Retrieve the next DataNode for storing the replica
-	 * 
-	 * @return the next datanode chosen
-	 * @throws RemoteException
-	 */
-	public DataNode allocateBlock() throws RemoteException;
-
-	/**
 	 * Commit the block allocation
 	 * 
 	 * @param dataNodeId
 	 *            datanode id that sotres the block
-	 * @param filename
-	 *            filename of the block
 	 * @param blockId
 	 *            block id
 	 * @throws RemoteException
 	 */
-	public void commitBlockAllocation(int dataNodeId, String filename,
-			int blockId) throws RemoteException;
+	public void commitBlockAllocation(int dataNodeId, int blockId)
+			throws RemoteException;
 
 	/**
 	 * Retrieve all block IDs with their DataNode IDs for the file with given
@@ -106,13 +96,41 @@ public interface NameNode extends Remote {
 	 */
 	public void terminate() throws RemoteException;
 
-	
 	/**
-	 * try to upload file via name node.
+	 * next block Id to be used by the block, either it is data (part of file)
+	 * or a whole runnable file
+	 * 
+	 * @return next block id
+	 */
+	public int getNextBlockId() throws RemoteException;
+
+	/**
+	 * The name node tries to allocate a data node stub to whomever wants this
+	 * to get a data node to upload the files.
+	 * 
+	 * @param blockId
+	 *            (the id of the block to be put on this node)
+	 * @return an id representing the node
+	 * @throws RemoteException
+	 */
+	public int allocateDataNode(int blockId) throws RemoteException;
+
+	/**
+	 * After the allocation of block, FileInfo now should contain the
+	 * information for the specific file, now we should update the information
+	 * to the remote side.
 	 * 
 	 * @param fileName
+	 * @param fileInfo
+	 */
+	public void updateFileInfos(String fileName, FileInfo fileInfo);
+	
+	/**
+	 * Check the health of all the data nodes. Mark failure ones as dead.
+	 * @throws RemoteException 
+	 * 
 	 * 
 	 */
-	public void uploadFile(String fileName);
-
+	public void healthCheck() throws RemoteException;
+	
 }

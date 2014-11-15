@@ -1,10 +1,15 @@
 package dfs;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileInfo {
+public class FileInfo implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String fileName;
 	private int replicas;
 	private List<Integer> blockIds;
@@ -33,6 +38,10 @@ public class FileInfo {
 
 	public void setReplicas(int replicas) {
 		this.replicas = replicas;
+	}
+	
+	public String toString(){
+		return this.fileName+"\t"+this.replicas+"\t" +this.blockIds.toString();
 	}
 
 }

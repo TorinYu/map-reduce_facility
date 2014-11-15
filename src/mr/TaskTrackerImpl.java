@@ -172,7 +172,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable{
 	@Override
 	public void startReducer(String jobId, String reducerId, String writePath, Class<? extends Reducer> reducer, String clspath)
     {
-        //ClassDownloader dn = new ClassDownloader(clspath, clspath, registryHost, dfsPort);
+        ClassDownloader dn = new ClassDownloader(clspath, clspath, registryHost, dfsPort);
         try {
             dn.download();
         } catch (RemoteException e) {

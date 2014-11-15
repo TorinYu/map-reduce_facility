@@ -1,35 +1,49 @@
 package dfs;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface DataNode extends Remote {
 
 	/**
-	 * This method is trying to take the command of DataNode to create file from
-	 * file path. Since we are assuming the file is available at AFS, there is
-	 * no need to consider locality.
+	 * The file is trying to put the certain content on file. Using String to
+	 * split data by line.
 	 * 
-	 * @param filePath
-	 * @param alias
-	 * @param id
+	 * 
+	 * @param blockId
+	 * @param content
 	 */
-	public void createBlock(String filePath, String alias, int id);
+	public void createBlock(int blockId, String content);
 
 	/**
-	 * @param fileName
-	 * @param blockID
-	 * @return a string representation of the string it returns
+	 * 
+	 * @param blockId
+	 * @param content
 	 */
-	public String fetchBlock(String fileName, int blockID);
+	public void createBlock(int blockId, byte[] content);
+
+	/**
+	 * create data node with the content it gets from another node.
+	 * 
+	 * @param blockId
+	 * @param dataNode
+	 */
+	public void createBlock(int blockId, DataNode dataNode);
 
 	/**
 	 * Return byte array representation.
 	 * 
-	 * @param fileName
 	 * @param blockID
-	 * @return
+	 * @return a byte array representation
 	 */
-	public byte[] fetchByteBlock(String fileName, int blockID);
+	public byte[] fetchByteBlock(int blockId);
+
+	/**
+	 * 
+	 * @param blockId
+	 * @return string representation of the block.
+	 */
+	public String fetchStringBlock(int blockId);
 
 	/**
 	 * terminate the data nodes.
@@ -39,7 +53,7 @@ public interface DataNode extends Remote {
 	/**
 	 * Heart Beat Used for health check.
 	 */
-	public void heartBeat();
+	public void heartBeat() throws RemoteException;
 
 	/**
 	 * 
@@ -49,7 +63,15 @@ public interface DataNode extends Remote {
 
 	/**
 	 * set the id of the
+	 * @param id to be set
 	 */
 	public void setId(int id);
+	
+	/**
+	 * tells where the directory stores the files
+	 * 
+	 * @return folder of the blocks
+	 */
+	public String getFolder();
 
 }
