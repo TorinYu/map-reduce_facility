@@ -3,6 +3,7 @@
  */
 package mr;
 
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -17,34 +18,40 @@ import mr.io.Writable;
 
 /**
  * @author Nicolas_Yu
- *
+ * 
  */
-public class Task implements Runnable{
+public class Task implements Runnable {
 
-	Class<? extends Mapper> mapper = null;
-	Class<? extends Reducer> reducer = null;
-	
-	
-	
-	String jobId = null;
-	String taskId = null;
-	String hostId = null;
-	String blockId = null; 
-	int reduceNum = 0;
-	String inputPath = null;
-	String outputPath = null;
-	String readFromHost = null;
-	
+	private Class<? extends Mapper> mapper = null;
+	private Class<? extends Reducer> reducer = null;
+
+	private String jobId = null;
+	private String taskId = null;
+	private String hostId = null;
+
+	private int reduceNum = 0;
+	private String inputPath = null;
+	private String outputPath = null;
+	private int blockId = 0;
+	private int dataNodeId = 0;
+
+	public int getDataNodeId() {
+		return dataNodeId;
+	}
+
+	public void setDataNodeId(int dataNodeId) {
+		this.dataNodeId = dataNodeId;
+	}
+
 	String readDir = null;
-	
+
 	Type.TASK_TYPE type = null;
-	
+
 	NameNode nameNode = null;
-	
+
 	Type.TASK_TYPE taskType = null;
 	Registry hdfsRegistry = null;
-	
-	
+
 	public Task(String job_id, String task_id, String host, int port) {
 		this.jobId = job_id;
 		this.taskId = task_id;
@@ -58,11 +65,10 @@ public class Task implements Runnable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
-	/* 
+
+	/*
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
@@ -70,18 +76,20 @@ public class Task implements Runnable{
 		// TODO Auto-generated method stub
 		if (type == TASK_TYPE.Mapper) {
 			try {
-				Mapper<Object, Object, Object, Object> mapClass = mapper.newInstance();
+				Mapper<Object, Object, Object, Object> mapClass = mapper
+						.newInstance();
 				String outputPath = "/tmp" + jobId + "/" + hostId + '/';
-				Context context = new Context(jobId, taskId, reduceNum, outputPath, TASK_TYPE.Mapper);
+				Context context = new Context(jobId, taskId, reduceNum,
+						outputPath, TASK_TYPE.Mapper);
 				// Waiting for JerrySun's API
-				DataNode dataNode = nameNode.fetchDataNode(readFromHost);
-				String content = dataNode.fetchBlock(blockId);
+				DataNode dataNode = nameNode.fetchDataNode(dataNodeId);
+				String content = dataNode.fetchStringBlock(blockId);
 				String[] lines = content.split("\\n");
 				for (int i = 0; i < lines.length; i++) {
 					String line = lines[i];
 					TextWritable key = new TextWritable();
 					TextWritable value = new TextWritable();
-					
+
 					value.setVal(line);
 					mapClass.map(key, value, context);
 				}
@@ -89,60 +97,77 @@ public class Task implements Runnable{
 			} catch (InstantiationException | IllegalAccessException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
-		} else {   //Reduce Task 
-            Reducer<Object, Object, Object, Object> reducerClass = reducer.newInstance();
-            Context context = new Context(jobId, taskId, reduceNum, outputPath, TASK_TYPE.Reducer);
-            //String partition_id = task_id.split("_r_")[1].trim();
-            String input_dir = "/tmp/"+jobId+'/'+hostId+'/';
-            
-            reducerClass.initialize(input_dir);
-            reducerClass.mergePartition();
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else { // Reduce Task
+			Reducer<Object, Object, Object, Object> reducerClass;
+			try {
+				reducerClass = reducer.newInstance();
 
-            ArrayList<RecordLine> reduceLines = reducerClass.getReduceLines();
-            
-            for (int i = 0; i < reduceLines.size(); i++) {
-            	TextWritable key = (TextWritable) reduceLines.get(i).getKey();
-            	Iterable<Writable> values = (Iterable<Writable>) reduceLines.get(i).getValue();
-            	reducerClass.reduce(key, values, context);
-            }
+				Context context = new Context(jobId, taskId, reduceNum,
+						outputPath, TASK_TYPE.Reducer);
+				// String partition_id = task_id.split("_r_")[1].trim();
+				String input_dir = "/tmp/" + jobId + '/' + hostId + '/';
+
+				reducerClass.initialize(input_dir);
+				reducerClass.mergePartition();
+
+				ArrayList<RecordLine> reduceLines = reducerClass
+						.getReduceLines();
+
+				for (int i = 0; i < reduceLines.size(); i++) {
+					TextWritable key = (TextWritable) reduceLines.get(i)
+							.getKey();
+					Iterable<Writable> values = (Iterable<Writable>) reduceLines
+							.get(i).getValue();
+					reducerClass.reduce(key, values, context);
+				}
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
-	}
 
+	}
 
 	public void setMapperClass(Class<? extends Mapper> mapper) {
 		this.mapper = mapper;
 	}
-	
+
 	/**
-	 * @param 
+	 * @param
 	 */
 	public void setTaskType(TASK_TYPE type) {
 		// TODO Auto-generated method stub
-		
-	}
-	
-	public void heartBeat() {
-		
+
 	}
 
+	public void heartBeat() {
+
+	}
 
 	/**
 	 * @return the blockId
 	 */
-	public String getBlockId() {
+	public int getBlockId() {
 		return blockId;
 	}
 
-
 	/**
-	 * @param blockId the blockId to set
+	 * @param blockId
+	 *            the blockId to set
 	 */
-	public void setBlockId(String blockId) {
+	public void setBlockId(int blockId) {
 		this.blockId = blockId;
 	}
-
 
 	/**
 	 * @return the reduceNum
@@ -151,14 +176,13 @@ public class Task implements Runnable{
 		return reduceNum;
 	}
 
-
 	/**
-	 * @param reduceNum the reduceNum to set
+	 * @param reduceNum
+	 *            the reduceNum to set
 	 */
 	public void setReduceNum(int reduceNum) {
 		this.reduceNum = reduceNum;
 	}
-
 
 	/**
 	 * @return the input_path
@@ -167,14 +191,13 @@ public class Task implements Runnable{
 		return inputPath;
 	}
 
-
 	/**
-	 * @param input_path the input_path to set
+	 * @param input_path
+	 *            the input_path to set
 	 */
 	public void setInputPath(String input_path) {
 		this.inputPath = input_path;
 	}
-
 
 	/**
 	 * @return the output_path
@@ -183,30 +206,13 @@ public class Task implements Runnable{
 		return outputPath;
 	}
 
-
 	/**
-	 * @param output_path the output_path to set
+	 * @param output_path
+	 *            the output_path to set
 	 */
 	public void setOutput_path(String output_path) {
 		this.outputPath = output_path;
 	}
-
-
-	/**
-	 * @return the readFromHost
-	 */
-	public String getReadFromHost() {
-		return readFromHost;
-	}
-
-
-	/**
-	 * @param readFromHost the readFromHost to set
-	 */
-	public void setReadFromHost(String readFromHost) {
-		this.readFromHost = readFromHost;
-	}
-
 
 	/**
 	 * @return the taskType
@@ -215,7 +221,6 @@ public class Task implements Runnable{
 		return taskType;
 	}
 
-
 	/**
 	 * @return the mapper
 	 */
@@ -223,14 +228,13 @@ public class Task implements Runnable{
 		return mapper;
 	}
 
-
 	/**
-	 * @param mapper the mapper to set
+	 * @param mapper
+	 *            the mapper to set
 	 */
 	public void setMapper(Class<? extends Mapper> mapper) {
 		this.mapper = mapper;
 	}
-
 
 	/**
 	 * @return the reducer
@@ -239,14 +243,13 @@ public class Task implements Runnable{
 		return reducer;
 	}
 
-
 	/**
-	 * @param reducer the reducer to set
+	 * @param reducer
+	 *            the reducer to set
 	 */
 	public void setReducer(Class<? extends Reducer> reducer) {
 		this.reducer = reducer;
 	}
-
 
 	/**
 	 * @return the jobId
@@ -255,14 +258,13 @@ public class Task implements Runnable{
 		return jobId;
 	}
 
-
 	/**
-	 * @param jobId the jobId to set
+	 * @param jobId
+	 *            the jobId to set
 	 */
 	public void setJobId(String jobId) {
 		this.jobId = jobId;
 	}
-
 
 	/**
 	 * @return the taskId
@@ -271,14 +273,13 @@ public class Task implements Runnable{
 		return taskId;
 	}
 
-
 	/**
-	 * @param taskId the taskId to set
+	 * @param taskId
+	 *            the taskId to set
 	 */
 	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
-
 
 	/**
 	 * @return the hostId
@@ -287,14 +288,13 @@ public class Task implements Runnable{
 		return hostId;
 	}
 
-
 	/**
-	 * @param hostId the hostId to set
+	 * @param hostId
+	 *            the hostId to set
 	 */
 	public void setHostId(String hostId) {
 		this.hostId = hostId;
 	}
-
 
 	/**
 	 * @return the outputPath
@@ -303,14 +303,13 @@ public class Task implements Runnable{
 		return outputPath;
 	}
 
-
 	/**
-	 * @param outputPath the outputPath to set
+	 * @param outputPath
+	 *            the outputPath to set
 	 */
 	public void setOutputPath(String outputPath) {
 		this.outputPath = outputPath;
 	}
-
 
 	/**
 	 * @return the type
@@ -319,14 +318,13 @@ public class Task implements Runnable{
 		return type;
 	}
 
-
 	/**
-	 * @param type the type to set
+	 * @param type
+	 *            the type to set
 	 */
 	public void setType(Type.TASK_TYPE type) {
 		this.type = type;
 	}
-
 
 	/**
 	 * @return the nameNode
@@ -335,14 +333,13 @@ public class Task implements Runnable{
 		return nameNode;
 	}
 
-
 	/**
-	 * @param nameNode the nameNode to set
+	 * @param nameNode
+	 *            the nameNode to set
 	 */
 	public void setNameNode(NameNode nameNode) {
 		this.nameNode = nameNode;
 	}
-
 
 	/**
 	 * @return the hdfsRegistry
@@ -351,14 +348,13 @@ public class Task implements Runnable{
 		return hdfsRegistry;
 	}
 
-
 	/**
-	 * @param hdfsRegistry the hdfsRegistry to set
+	 * @param hdfsRegistry
+	 *            the hdfsRegistry to set
 	 */
 	public void setHdfsRegistry(Registry hdfsRegistry) {
 		this.hdfsRegistry = hdfsRegistry;
 	}
-
 
 	/**
 	 * @return the readDir
@@ -367,12 +363,12 @@ public class Task implements Runnable{
 		return readDir;
 	}
 
-
 	/**
-	 * @param readDir the readDir to set
+	 * @param readDir
+	 *            the readDir to set
 	 */
 	public void setReadDir(String readDir) {
 		this.readDir = readDir;
 	}
-	
+
 }

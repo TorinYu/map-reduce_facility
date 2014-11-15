@@ -396,17 +396,13 @@ public class JobTrackerImpl implements JobTracker, Runnable{
                 Job job = this.jobId_Job.get(jobId);
                 Class<? extends Reducer> reducer = job.getReducer();
                 String cls_path = job.getReducerPath();
-                try {
-                    tt.startReducer(jobId, reducer_id, writePath, reducer, cls_path);
-                    Hashtable<String, String> rcmc = new Hashtable<String, String>();
-                    rcmc.put(reducer_id, mcID);
-                    jobReducerHost.put(jobId, rcmc);
-                    job.addReduceNum();
-                    job.setReducer_status(reducer_id, TASK_STATUS.RUNNING);
-                    System.out.println("Starting Reducer in JobTracker, job_id:"+jobId+", reducer id:"+reducer_id);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                tt.startReducer(jobId, reducer_id, writePath, reducer, cls_path);
+				Hashtable<String, String> rcmc = new Hashtable<String, String>();
+				rcmc.put(reducer_id, mcID);
+				jobReducerHost.put(jobId, rcmc);
+				job.addReduceNum();
+				job.setReducer_status(reducer_id, TASK_STATUS.RUNNING);
+				System.out.println("Starting Reducer in JobTracker, job_id:"+jobId+", reducer id:"+reducer_id);
             }
         }
     }

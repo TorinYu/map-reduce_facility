@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.TreeMap;
 
 public class NameNodeImpl implements NameNode {
 	private Registry registry;
@@ -152,7 +153,7 @@ public class NameNodeImpl implements NameNode {
 
 		FileInfo fileInfo = this.fileInfos.get(filename);
 
-		HashMap<Integer, List<Integer>> allBlocks = new HashMap<Integer, List<Integer>>();
+		TreeMap<Integer, List<Integer>> allBlocks = new TreeMap<Integer, List<Integer>>();
 		for (Integer blockId : fileInfo.getBlockIds()) {
 			allBlocks.put(blockId, this.blockInfos.get(blockId)
 					.getDataNodeIds());
