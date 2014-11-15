@@ -264,6 +264,7 @@ public class NameNodeImpl implements NameNode {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private void bootstrap() {
 		File dfsImage = new File(this.dfsPath);
 		if (!dfsImage.exists()) {
@@ -281,6 +282,7 @@ public class NameNodeImpl implements NameNode {
 				this.dataNodeHeap.add(entry.getValue());
 			}
 
+			ois.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -345,4 +347,19 @@ public class NameNodeImpl implements NameNode {
 		}
 	}
 
+	public static void main(String args[]) {
+		int registryPort = Integer.parseInt(args[0]);
+		String dfs = args[1];
+		int replication = Integer.parseInt(args[2]);
+		int blockSize = Integer.parseInt(args[3]);
+		int port = Integer.parseInt(args[4]);
+		int checkInterval = Integer.parseInt(args[5]);
+		NameNode node = new NameNodeImpl(registryPort, dfs, replication,
+				blockSize, port, checkInterval);
+		try {
+			node.healthCheck();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
 }

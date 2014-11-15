@@ -82,6 +82,7 @@ public class FileUploader {
 				}
 			}
 			namenode.updateFileInfos(alias, info);
+			br.close();
 
 		} catch (NotBoundException e) {
 			e.printStackTrace();

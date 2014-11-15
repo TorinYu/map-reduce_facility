@@ -24,17 +24,26 @@ public class DataNodeImpl implements DataNode {
 	private static final String NAMENODE = "namenode";
 	private int myPort = 0;
 
-	public DataNodeImpl(int id, String dir, String registryHost,
-			int registryPort, int myPort) {
-		this.setId(id);
+	public DataNodeImpl(String registryHost, int registryPort, String dir,
+			int myPort) {
 		this.dir = dir;
 		this.registryHost = registryHost;
 		this.registryPort = registryPort;
 		this.blockIds = new ArrayList<Integer>();
 		this.myPort = myPort;
+		this.start();
 	}
 
-	public void start() {
+	public static void main(String args[]) {
+		String registryHost = args[0];
+		int registryPort = Integer.parseInt(args[1]);
+		String dir = args[2];
+		int myPort = Integer.parseInt(args[3]);
+		DataNode datanode = new DataNodeImpl(registryHost, registryPort, dir,
+				myPort);
+	}
+
+	private void start() {
 		try {
 			DataNode stub = (DataNode) UnicastRemoteObject.exportObject(this,
 					myPort);
@@ -42,7 +51,8 @@ public class DataNodeImpl implements DataNode {
 				Registry registry = LocateRegistry.getRegistry(registryHost,
 						registryPort);
 				NameNode namenode = (NameNode) registry.lookup(NAMENODE);
-				namenode.register(stub);
+				int id = namenode.register(stub);
+				this.setId(id);
 				break;
 			}
 		} catch (RemoteException e) {
