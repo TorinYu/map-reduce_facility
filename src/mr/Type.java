@@ -3,11 +3,13 @@
  */
 package mr;
 
+import java.io.Serializable;
+
 /**
  * @author Nicolas_Yu
  *
  */
-public class Type {
+public class Type implements Serializable {
 	public enum TASK_TYPE {
 		Mapper, Reducer;
 	}

@@ -95,6 +95,8 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	// Information of JobID, MachineID, partitionID, size
 	HashMap<String, HashMap<String, HashMap<String, Integer>>> job_mc_hash_size = new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
 
+	private static final String NAMENODE = "namenode";
+
 	/**
 	 * Initialize the JobTracker, create the MR Registry and bind the JobTracker
 	 * 
@@ -102,7 +104,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 */
 	@Override
 	public void initialize(int mrPort, String hdfsRegistryHost, int hdfsPort,
-			int jobTrackerPort, int reducerNum) {
+			int jobTrackerPort, int reducerNum) throws RemoteException {
 
 		try {
 			this.mapReducePort = mrPort;
@@ -111,7 +113,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 
 			hdfsRegistry = LocateRegistry.getRegistry(hdfsRegistryHost,
 					hdfsPort);
-			this.nameNode = (NameNode) this.hdfsRegistry.lookup("NameNode");
+			this.nameNode = (NameNode) this.hdfsRegistry.lookup(NAMENODE);
 
 			this.jobTrackerPort = jobTrackerPort;
 			JobTracker stub = (JobTracker) UnicastRemoteObject.exportObject(
@@ -137,7 +139,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * @see mr.JobTracker#schedule(mr.Job)
 	 */
 	@Override
-	public void schedule(Job job) {
+	public void schedule(Job job) throws RemoteException {
 		try {
 			Map<Integer, List<Integer>> mappings = this.nameNode
 					.getAllBlocks(job.getFileName());
@@ -239,7 +241,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 *         schedule 2 reducers on C.
 	 * */
 	@Override
-	public HashMap<String, List<String>> chooseReducer(String jobID) {
+	public HashMap<String, List<String>> chooseReducer(String jobID) throws RemoteException {
 		/* partition_res: mapping of machineID and hashedID */
 		HashMap<String, List<String>> partition_res = new HashMap<String, List<String>>();
 		HashMap<String, HashMap<String, Integer>> mc_hash_size = job_mc_hash_size
@@ -323,7 +325,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * @param mcID_hashIDs
 	 */
 	public void shuffle(String jobId,
-			HashMap<String, List<String>> hostID_hashIDs) {
+			HashMap<String, List<String>> hostID_hashIDs) throws RemoteException {
 		System.out.println("Shuffling ....");
 		Iterator<Entry<String, List<String>>> iter = hostID_hashIDs.entrySet()
 				.iterator();
@@ -391,7 +393,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 */
 	@Override
 	public void startReducer(String jobId, String writePath,
-			HashMap<String, List<String>> hostID_hashIDs) {
+			HashMap<String, List<String>> hostID_hashIDs) throws RemoteException {
 		Iterator<Entry<String, List<String>>> iter = hostID_hashIDs.entrySet()
 				.iterator();
 		while (iter.hasNext()) {
@@ -458,8 +460,9 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * 
 	 * @param machineID
 	 *            the ID of machine that was down
+	 * @throws RemoteException 
 	 */
-	private void restartJobs(String machineID) {
+	private void restartJobs(String machineID) throws RemoteException {
 		System.out.println("--------In restart jobs");
 		Set<String> running_jobIDs = runningJobs.get(machineID);
 		System.out.println("Running jobIDs on broken machine " + machineID
@@ -596,9 +599,10 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	/**
 	 * periodically check if TaskTrackers are still alive by sending heartbeat
 	 * request to TaskTrackers
+	 * @throws RemoteException 
 	 */
 	@Override
-	public void healthCheck() {
+	public void healthCheck() throws RemoteException {
 		while (true) {
 			if (this.terminated)
 				break;
@@ -869,9 +873,14 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		int mrPort = Integer.valueOf(args[0]);
 		String dfsHost = args[1];
 		int dfsPort = Integer.valueOf(args[2]);
+		
 		int selfPort = Integer.valueOf(args[3]);
 		int reducer_ct = Integer.valueOf(args[4]);
-		jt.initialize(mrPort, dfsHost, dfsPort, selfPort, reducer_ct);
+		try {
+			jt.initialize(mrPort, dfsHost, dfsPort, selfPort, reducer_ct);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 
 	}
 

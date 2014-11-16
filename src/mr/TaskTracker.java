@@ -16,7 +16,7 @@ import com.sun.corba.se.impl.orbutil.closure.Future;
  */
 public interface TaskTracker extends Serializable, Remote{
 	
-	public void setReduceNum(int reduceNum);
+	public void setReduceNum(int reduceNum) throws RemoteException;
 	
 	public void heartBeat() throws RemoteException;
 
@@ -25,26 +25,26 @@ public interface TaskTracker extends Serializable, Remote{
 	 * @param name
 	 * @return
 	 */
-	String readStr(String path, String name);
+	String readStr(String path, String name) throws RemoteException;
 
 	/**
 	 * @param path
 	 * @param content
 	 */
-	void writeFile(String path, byte[] content);
+	void writeFile(String path, byte[] content) throws RemoteException;
 
 	/**
 	 * @param path
 	 * @param hashID
 	 * @return
 	 */
-	List<String> readDir(String path, String hashID);
+	List<String> readDir(String path, String hashID) throws RemoteException;
 
 	/**
 	 * @param path
 	 * @param content
 	 */
-	void writeStr(String path, String content);
+	void writeStr(String path, String content) throws RemoteException;
 	
     /**
      * terminate a task
@@ -65,7 +65,7 @@ public interface TaskTracker extends Serializable, Remote{
 	 * @param clspath
 	 */
 	void startReducer(String jobId, String reducerId, String writePath,
-			Class<? extends Reducer> reducer, String clspath);
+			Class<? extends Reducer> reducer, String clspath) throws RemoteException;
 
 	/**
 	 * @param jobId
@@ -77,6 +77,6 @@ public interface TaskTracker extends Serializable, Remote{
 	 */
 	void startMapper(String jobId, String mapId, String blockId,
 			String readFromHost, Class<? extends Mapper> mapper,
-			String maperPath);
+			String maperPath) throws RemoteException;
 
 }

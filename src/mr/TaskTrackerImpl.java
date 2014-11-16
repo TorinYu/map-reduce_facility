@@ -82,6 +82,8 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 			this.reduceNum = reduceNum;
 			this.port = selfPort;
 
+			this.hostId = String.valueOf(taskId);
+			
 			executorService = Executors.newCachedThreadPool();
 			executorService.submit(this);
 		} catch (RemoteException e) {

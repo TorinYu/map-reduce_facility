@@ -22,6 +22,7 @@ import mr.io.Writable;
  */
 public class Task implements Runnable {
 
+	private static final String NAMENODE = "namenode";
 	private Class<? extends Mapper> mapper = null;
 	private Class<? extends Reducer> reducer = null;
 
@@ -57,7 +58,7 @@ public class Task implements Runnable {
 		this.taskId = task_id;
 		try {
 			hdfsRegistry = LocateRegistry.getRegistry(host, port);
-			nameNode = (NameNode) hdfsRegistry.lookup("NameNode");
+			nameNode = (NameNode) hdfsRegistry.lookup(NAMENODE);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

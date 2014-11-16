@@ -64,9 +64,9 @@ public interface JobTracker extends Serializable, Remote {
 	 * @param hostId
 	 * @param taskTracker
 	 */
-	public void register(String hostId, TaskTracker taskTracker);
+	public void register(String hostId, TaskTracker taskTracker) throws RemoteException;
 
-	public void healthCheck();
+	public void healthCheck() throws RemoteException;
 
 	public void allocateMapper(String hostId, String mapId, String blockId,
 			String readFromHost, Job job,
@@ -85,7 +85,7 @@ public interface JobTracker extends Serializable, Remote {
 	 * @param jobID
 	 * @return
 	 */
-	HashMap<String, List<String>> chooseReducer(String jobID);
+	HashMap<String, List<String>> chooseReducer(String jobID) throws RemoteException;
 
 	/**
 	 * @param jobId
@@ -93,7 +93,7 @@ public interface JobTracker extends Serializable, Remote {
 	 * @param hostID_hashIDs
 	 */
 	void startReducer(String jobId, String writePath,
-			HashMap<String, List<String>> hostID_hashIDs);
+			HashMap<String, List<String>> hostID_hashIDs) throws RemoteException;
 
 	/**
 	 * @throws RemoteException

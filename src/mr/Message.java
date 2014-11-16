@@ -3,6 +3,7 @@
  */
 package mr;
 
+import java.io.Serializable;
 import java.util.concurrent.Future;
 
 import mr.Type.JOB_STATUS;
@@ -14,7 +15,7 @@ import mr.Type.TASK_TYPE;
  * @author Nicolas_Yu
  *
  */
-public class Message {
+public class Message implements Serializable{
 	private MESSAGE_TYPE messageType = null;
     private TASK_TYPE taskType = null;
     private Object content = null;
