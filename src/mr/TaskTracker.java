@@ -18,10 +18,6 @@ public interface TaskTracker extends Serializable, Remote{
 	
 	public void setReduceNum(int reduceNum);
 	
-	public void startMapper();
-	
-	public void startReducer();
-	
 	public void heartBeat() throws RemoteException;
 
 	/**

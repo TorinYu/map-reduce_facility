@@ -18,7 +18,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -65,13 +64,17 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 
 	LinkedBlockingQueue<Message> heartbeats = new LinkedBlockingQueue<Message>();
 
-	public TaskTrackerImpl(String mrRegistryHost, int mrPort, int hdfsPort,
-			int selfPort, int taskId, int reduceNum, String inputDir) {
+	public TaskTrackerImpl(String mrRegistryHost, int mrPort, String dfsHost,
+			int hdfsPort, int selfPort, int taskId, int reduceNum,
+			String inputDir) {
 		try {
 
 			this.mapReduceRegistryHost = mrRegistryHost;
 			this.mapReducePort = mrPort;
+
+			this.hdfsRegistryHost = dfsHost;
 			this.hdfsPort = hdfsPort;
+
 			mapReduceRegistry = LocateRegistry.getRegistry(
 					this.mapReduceRegistryHost, this.mapReducePort);
 			this.inputDir = inputDir;
@@ -82,10 +85,8 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 			executorService = Executors.newCachedThreadPool();
 			executorService.submit(this);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NotBoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -207,10 +208,8 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 			writeFile.write(content);
 			writeFile.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -286,8 +285,6 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	 */
 	@Override
 	public void heartBeat() {
-		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -306,6 +303,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 						msg.setFuture(null);
 						jobTracker.checkHeartbeat(msg);
 					}
+					@SuppressWarnings("unchecked")
 					HashMap<String, Integer> idSize = (HashMap<String, Integer>) f
 							.get();
 					msg.setFuture(null);
@@ -345,7 +343,6 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		String output_path = msg.getOutput_path();
 		if (f1 != null) {
 			if (f1.isDone()) {
-				LinkedList<RecordLine> contents;
 				try {
 					if (f1.get() != null) {
 						if (f1.get() == TASK_STATUS.TERMINATED) {
@@ -373,7 +370,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 					e.printStackTrace();
 				} catch (RemoteException e) {
 					e.printStackTrace();
-				} 
+				}
 			} else if (f1.isCancelled()) {
 				msg.setTaskStat(TASK_STATUS.TERMINATED);
 				try {
@@ -395,7 +392,6 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	 */
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		while (true) {
 			if (this.terminated)
 				return;
@@ -409,24 +405,16 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 					try {
 						jobTracker.checkHeartbeat(msg);
 					} catch (RemoteException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 			} else {
 				try {
 					TimeUnit.SECONDS.sleep(1);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
-	}
-
-	@Override
-	public void startMapper() {
-		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -442,22 +430,17 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 
 	public static void main(String[] args) {
 		/* TaskTracker ID should be the same with the id of the DataNode */
-		String registryHost = args[0];
+		String mrRegistryHost = args[0];
 		int mrPort = Integer.valueOf(args[1]);
-		int dfsPort = Integer.valueOf(args[2]);
-		int selfPort = Integer.valueOf(args[3]);
-		int id = Integer.valueOf(args[4]);
-		String read_dir = args[5];
-		int reducer_ct = Integer.valueOf(args[6]);
-		TaskTrackerImpl tt = new TaskTrackerImpl(registryHost, mrPort, dfsPort,
-				selfPort, id, reducer_ct, read_dir);
+		String dfsHost = args[2];
+		int dfsPort = Integer.valueOf(args[3]);
+		int selfPort = Integer.valueOf(args[4]);
+		int id = Integer.valueOf(args[5]);
+		String read_dir = args[6];
+		int reducer_ct = Integer.valueOf(args[7]);
+		TaskTrackerImpl tt = new TaskTrackerImpl(mrRegistryHost, mrPort,
+				dfsHost, dfsPort, selfPort, id, reducer_ct, read_dir);
 		tt.initialize();
-	}
-
-	@Override
-	public void startReducer() {
-		// TODO Auto-generated method stub
-
 	}
 
 }

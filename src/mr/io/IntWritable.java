@@ -7,17 +7,20 @@ import java.io.Serializable;
 
 /**
  * @author Nicolas_Yu
- *
+ * 
  */
-public class IntWritable implements Serializable, Writable{
+public class IntWritable implements Serializable, Writable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -7593209358292388107L;
-	
+
 	private Integer val = null;
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see mr.io.Writable#getVal()
 	 */
 	@Override
@@ -26,13 +29,18 @@ public class IntWritable implements Serializable, Writable{
 		return val;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see mr.io.Writable#setVal(java.lang.Object)
 	 */
 	@Override
 	public void setVal(Object val) {
 		// TODO Auto-generated method stub
-		this.val = (Integer)val;
+		this.val = (Integer) val;
 	}
-	
+
+	public IntWritable(int val) {
+		this.val = new Integer(val);
+	}
 }
