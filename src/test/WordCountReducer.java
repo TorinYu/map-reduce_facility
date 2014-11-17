@@ -12,7 +12,7 @@ public class WordCountReducer extends
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 3537114852870561802L;
+	private static final long serialVersionUID = 1L;
 
 	public void reduce(TextWritable key, Iterable<Writable> values,
 			Context context) {
