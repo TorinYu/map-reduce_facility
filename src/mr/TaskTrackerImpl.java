@@ -176,27 +176,32 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	@Override
 	public void startReducer(String jobId, String reducerId, String writePath,
 			Class<? extends Reducer> reducer, String clspath) {
-		Downloader dn = new Downloader(hdfsRegistryHost, hdfsPort);
-		dn.download(clspath, clspath);
+		try {
+			Downloader dn = new Downloader(hdfsRegistryHost, hdfsPort);
+			dn.download(clspath, clspath);
 
-		Task task = new Task(jobId, reducerId, hdfsRegistryHost, hdfsPort);
-		task.setTaskType(Type.TASK_TYPE.Reducer);
-		task.setReducer(reducer);
-		task.setOutputPath(writePath);
-		task.setReducerNum(reducerNum);
-		task.setHostId(hostId);
-		Future<?> f1 = (Future<?>) executorService.submit(task);
-		taskFuture.put(reducerId, f1);
+			System.out.println("Download Finishes!");
+			Task task = new Task(jobId, reducerId, hdfsRegistryHost, hdfsPort);
+			task.setTaskType(Type.TASK_TYPE.Reducer);
+			task.setReducer(reducer);
+			task.setOutputPath(writePath);
+			task.setReducerNum(reducerNum);
+			task.setHostId(hostId);
+			Future<?> f1 = (Future<?>) executorService.submit(task);
+			taskFuture.put(reducerId, f1);
 
-		Message msg = new Message();
-		msg.setJobId(jobId);
-		msg.setTaskId(reducerId);
-		msg.setTaskType(TASK_TYPE.Reducer);
-		msg.setTaskStat(TASK_STATUS.RUNNING);
-		msg.setHostId(String.valueOf(hostId));
-		msg.setOutputPath(writePath);
-		msg.setFuture(f1);
-		this.heartbeats.offer(msg);
+			Message msg = new Message();
+			msg.setJobId(jobId);
+			msg.setTaskId(reducerId);
+			msg.setTaskType(TASK_TYPE.Reducer);
+			msg.setTaskStat(TASK_STATUS.RUNNING);
+			msg.setHostId(String.valueOf(hostId));
+			msg.setOutputPath(writePath);
+			msg.setFuture(f1);
+			this.heartbeats.offer(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/*
@@ -247,8 +252,9 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		List<String> retNames = new ArrayList<String>();
 		for (int i = 0; i < files.length; i++) {
 			String name = files[i].getName();
-			String tmp[] = name.split("@");
+			String tmp[] = name.split("#");
 			if (tmp.length > 0)
+
 				if (tmp[tmp.length - 1].equals(hashID)) {
 					retNames.add(name);
 				}
@@ -300,19 +306,19 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		if (f != null) {
 			if (f.isDone()) {
 				try {
-					System.out.println("F.get() is null? " + (f.get() == null));
+					System.out.println("F.get() is  "
+							+ (Type.TASK_STATUS) (f.get()));
+
 					if (f.get() == TASK_STATUS.TERMINATED) {
 						msg.setTaskStat(TASK_STATUS.TERMINATED);
 						msg.setFuture(null);
 						jobTracker.checkHeartbeat(msg);
+					} else {
+						msg.setFuture(null);
+						msg.setContent(null);
+						msg.setTaskStat(TASK_STATUS.FINISHED);
+						jobTracker.checkHeartbeat(msg);
 					}
-					@SuppressWarnings("unchecked")
-					HashMap<String, Integer> idSize = (HashMap<String, Integer>) f
-							.get();
-					msg.setFuture(null);
-					msg.setContent(idSize);
-					msg.setTaskStat(TASK_STATUS.FINISHED);
-					jobTracker.checkHeartbeat(msg);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (ExecutionException e) {
@@ -344,10 +350,15 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		Future f1 = msg.getFuture();
 		String reducer_id = msg.getTaskId();
 		String output_path = msg.getOutputPath();
+		System.out.println("f1 is null? " + (f1 == null));
 		if (f1 != null) {
 			if (f1.isDone()) {
 				try {
+					System.out.println("f1.get() is null? "
+							+ (f1.get() == null));
 					if (f1.get() != null) {
+						System.out.println("f1.get() is  " + (f1.get()));
+
 						if (f1.get() == TASK_STATUS.TERMINATED) {
 							msg.setTaskStat(TASK_STATUS.TERMINATED);
 							msg.setFuture(null);
@@ -400,11 +411,11 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 				return;
 			Message msg = this.heartbeats.poll();
 			if (msg != null) {
-				if (msg.getTaskType() == TASK_TYPE.Mapper)
+				if (msg.getTaskType() == TASK_TYPE.Mapper) {
 					checkMapper(msg);
-				else if (msg.getTaskType() == TASK_TYPE.Reducer)
+				} else if (msg.getTaskType() == TASK_TYPE.Reducer) {
 					checkReducer(msg);
-				else
+				} else
 					try {
 						jobTracker.checkHeartbeat(msg);
 					} catch (RemoteException e) {
@@ -412,7 +423,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 					}
 			} else {
 				try {
-					TimeUnit.SECONDS.sleep(1);
+					TimeUnit.SECONDS.sleep(10);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

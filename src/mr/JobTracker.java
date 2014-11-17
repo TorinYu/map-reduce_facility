@@ -69,8 +69,7 @@ public interface JobTracker extends Serializable, Remote {
 	public void healthCheck() throws RemoteException;
 
 	public void allocateMapper(String hostId, String mapId, String blockId,
-			String readFromHost, Job job,
-			java.util.Hashtable<String, String> hostMapper)
+			String readFromHost, Job job)
 			throws RemoteException;
 
 	/**

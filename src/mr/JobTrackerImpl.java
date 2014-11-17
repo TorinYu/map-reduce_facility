@@ -59,11 +59,10 @@ import dfs.NameNode;
 
 public class JobTrackerImpl implements JobTracker, Runnable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUId = 1L;
 	private Registry hdfsRegistry = null;
 	private NameNode nameNode = null;
 
-	private String jobId = null;
 	private Registry mapReduceRegistry = null;
 	private int mapReducePort = 0;
 
@@ -79,7 +78,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	private Hashtable<String, TaskTracker> registeredTaskTrackers = new Hashtable<String, TaskTracker>();
 
 	// Information of JobId and output File dir
-	private Hashtable<String, String> jobId_OutputFileDir = new Hashtable<String, String>();
+	private Hashtable<String, String> jobIdOutputDir = new Hashtable<String, String>();
 
 	// Information of hostId and available Slots
 	private Hashtable<String, Integer> availableSlots = new Hashtable<String, Integer>();
@@ -90,11 +89,11 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	private Hashtable<String, Hashtable<String, String>> jobMapperHost = new Hashtable<String, Hashtable<String, String>>();
 	private Hashtable<String, Hashtable<String, String>> jobReducerHost = new Hashtable<String, Hashtable<String, String>>();
 
-	private Hashtable<String, Job> jobId_Job = new Hashtable<String, Job>();
+	private Hashtable<String, Job> jobMap = new Hashtable<String, Job>();
 
-	// Information of JobID, MachineID, partitionID, size
-	HashMap<String, HashMap<String, HashMap<String, Integer>>> job_mc_hash_size = new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
-
+	// Information of JobId, MachineId, partitionId, size
+	HashMap<String, HashMap<String, HashMap<String, Integer>>> job_host_hash_size = new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
+	// jobId //hostId //partitionId size
 	private static final String NAMENODE = "namenode";
 
 	/**
@@ -144,28 +143,28 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 			Map<Integer, List<Integer>> mappings = this.nameNode
 					.getAllBlocks(job.getFileName());
 			job.setJobStatus(JOB_STATUS.RUNNING);
-			jobId_Job.put(job.getJobId(), job);
+			jobMap.put(job.getJobId(), job);
 			Set<?> set = mappings.entrySet();
 			if (job.getOutputFilePath() != null)
-				jobId_OutputFileDir
-						.put(job.getJobId(), job.getOutputFilePath());
+				jobIdOutputDir.put(job.getJobId(), job.getOutputFilePath());
 			System.out.println("Scheduling Job " + job.getJobId());
-			Hashtable<String, String> mc_mp = new Hashtable<String, String>();
+			// Hashtable<String, String> host_mp = new Hashtable<String,
+			// String>();
 			for (Iterator<?> iter = set.iterator(); iter.hasNext();) {
 				@SuppressWarnings("rawtypes")
 				Entry entry = (Entry) iter.next();
-				Integer blockID = (Integer) entry.getKey();
+				Integer blockId = (Integer) entry.getKey();
 				@SuppressWarnings("unchecked")
 				List<Integer> value = (List<Integer>) entry.getValue();
-				System.out.println("BlockID:" + blockID.toString());
+				System.out.println("BlockId:" + blockId.toString());
 				/* set mapper task */
-				String mapId = job.getJobId() + "_m_" + String.valueOf(blockID);
+				String mapId = job.getJobId() + "_m_" + String.valueOf(blockId);
 				boolean allocated = false;
 				for (Integer hostId : value) {
 					if (!this.registeredTaskTrackers.containsKey(String
 							.valueOf(hostId)))
 						continue;
-					System.out.println("MachineID:" + hostId.toString());
+					System.out.println("MachineId:" + hostId.toString());
 					int availableSlots = this.availableSlots.get(String
 							.valueOf(hostId));
 					System.out.println("Aval Slots NUM:" + availableSlots);
@@ -173,20 +172,19 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 						System.out.println("Availble CPU, machine: " + hostId);
 						String readFromHost = String.valueOf(hostId);
 						allocateMapper(String.valueOf(hostId), mapId,
-								String.valueOf(blockID), readFromHost, job,
-								mc_mp);
+								String.valueOf(blockId), readFromHost, job);
 						availableSlots--;
 						this.availableSlots.put(String.valueOf(hostId),
 								availableSlots);
 						allocated = true;
-						Set<String> runningJobIDs = runningJobs.get(hostId);
-						if (runningJobIDs == null) {
-							runningJobIDs = new HashSet<String>();
-							runningJobIDs.add(job.getJobId());
+						Set<String> runningJobIds = runningJobs.get(hostId);
+						if (runningJobIds == null) {
+							runningJobIds = new HashSet<String>();
+							runningJobIds.add(job.getJobId());
 							runningJobs.put(String.valueOf(hostId),
-									runningJobIDs);
+									runningJobIds);
 						} else {
-							runningJobIDs.add(job.getJobId());
+							runningJobIds.add(job.getJobId());
 						}
 						break;
 					}
@@ -195,19 +193,19 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					String hostId = chooseSpareMachine();
 					if (!hostId.equals("")) {
 						int avaiSlots = this.availableSlots.get(hostId);
-						String read_from_machine = String.valueOf(value.get(0));
-						allocateMapper(hostId, mapId, String.valueOf(blockID),
-								read_from_machine, job, mc_mp);
+						String readFromMachine = String.valueOf(value.get(0));
+						allocateMapper(hostId, mapId, String.valueOf(blockId),
+								readFromMachine, job); // , host_mp);
 						avaiSlots--;
 						this.availableSlots.put(hostId, avaiSlots);
 						allocated = true;
-						Set<String> runningJobIDs = runningJobs.get(hostId);
-						if (runningJobIDs == null) {
-							runningJobIDs = new HashSet<String>();
-							runningJobIDs.add(job.getJobId());
-							runningJobs.put(hostId, runningJobIDs);
+						Set<String> runningJobIds = runningJobs.get(hostId);
+						if (runningJobIds == null) {
+							runningJobIds = new HashSet<String>();
+							runningJobIds.add(job.getJobId());
+							runningJobs.put(hostId, runningJobIds);
 						} else {
-							runningJobIDs.add(job.getJobId());
+							runningJobIds.add(job.getJobId());
 						}
 					} else {
 						System.out.println("No Available Machine");
@@ -224,7 +222,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * Choose the Top N (N = num of reducers) sizes, for each partition,
 	 * allocate reducers on the machine that has most resources.
 	 * 
-	 * @param jobID
+	 * @param jobId
 	 *            job's id
 	 * @return a hashmap of the assignment
 	 * 
@@ -240,24 +238,39 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 *         C has the most resources for k1 and k2, Thus we choose to
 	 *         schedule 2 reducers on C.
 	 * */
+
+	/**
+	 * Update: choose it randomly.
+	 */
 	@Override
-	public HashMap<String, List<String>> chooseReducer(String jobID) throws RemoteException {
-		/* partition_res: mapping of machineID and hashedID */
-		HashMap<String, List<String>> partition_res = new HashMap<String, List<String>>();
-		HashMap<String, HashMap<String, Integer>> mc_hash_size = job_mc_hash_size
-				.get(jobID);
+	public HashMap<String, List<String>> chooseReducer(String jobId)
+			throws RemoteException {
+		/* partition_res: mapping of machineId and hashedId */
+		HashMap<String, List<String>> partitionResult = new HashMap<String, List<String>>();
+		HashMap<String, HashMap<String, Integer>> host_hash_size = job_host_hash_size
+				.get(jobId);
+		try {
+			System.out.println("Choosing Partition! size: "
+					+ host_hash_size.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		/* allocate #reducer_ct reducers */
 		for (int i = 0; i < reducerNum; i++) {
+			System.out.println("*****************Reducer #" + i
+					+ "  *****************");
 			TreeMap<Integer, String> priorityQ = new TreeMap<Integer, String>();
 			/* insert each record into a priority queue */
-			for (Entry<String, HashMap<String, Integer>> entry : mc_hash_size
+			for (Entry<String, HashMap<String, Integer>> entry : host_hash_size
 					.entrySet()) {
-				System.out.println("Entry:" + entry.toString());
+				System.out.println("********* Entry: " + entry.toString());
 				Integer size = entry.getValue().get(String.valueOf(i));
-				if (size == null)
+				if (size == null) {
 					size = 0;
+				}
 				priorityQ.put(size, entry.getKey());
-				System.out.println("PriorityQ:" + priorityQ.toString());
+				System.out.println("********* PriorityQ:"
+						+ priorityQ.toString());
 			}
 			/*
 			 * iteratively get the machine with most records, and check #cpu
@@ -286,14 +299,14 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					availableSlots.put(machineId, availCPUs);
 				}
 			}
-			List<String> lst = partition_res.get(machineId);
+			List<String> lst = partitionResult.get(machineId);
 			if (lst == null)
 				lst = new ArrayList<String>();
 			lst.add(String.valueOf(i));
-			partition_res.put(machineId, lst);
+			partitionResult.put(machineId, lst);
 		}
-		System.out.println("Partition_res:" + partition_res.toString());
-		return partition_res;
+		System.out.println("PartitionRes:" + partitionResult.toString());
+		return partitionResult;
 	}
 
 	/**
@@ -305,13 +318,13 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		String hostId = "";
 		while (iter.hasNext()) {
 			Entry<String, Integer> entry = (Entry<String, Integer>) iter.next();
-			String machineID = (String) entry.getKey();
-			if (!this.registeredTaskTrackers.containsKey(machineID))
+			String machineId = (String) entry.getKey();
+			if (!this.registeredTaskTrackers.containsKey(machineId))
 				continue;
 			Integer res = (Integer) entry.getValue();
 			if (res > 0)
-				return machineID;
-			hostId = machineID;
+				return machineId;
+			hostId = machineId;
 		}
 		return hostId;
 	}
@@ -320,66 +333,81 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * Shuffle partitions among machines, thus to ensure same key goes to same
 	 * reducer
 	 * 
-	 * @param jobID
+	 * @param jobId
 	 *            job's id
-	 * @param mcID_hashIDs
+	 * @param hostId_hashIds
 	 */
 	public void shuffle(String jobId,
-			HashMap<String, List<String>> hostID_hashIDs) throws RemoteException {
+			HashMap<String, List<String>> hostId_hashIds)
+			throws RemoteException {
 		System.out.println("Shuffling ....");
-		Iterator<Entry<String, List<String>>> iter = hostID_hashIDs.entrySet()
-				.iterator();
-		Set<String> hostIDsets = getMapperHostIDs(jobId);
-		while (iter.hasNext()) {
-			Iterator<String> mc_iter = hostIDsets.iterator();
-			Entry<String, List<String>> entry = (Entry<String, List<String>>) iter
-					.next();
-			String hostID = (String) entry.getKey();
-			List<String> hashIDs = (List<String>) entry.getValue();
+		try {
+			Iterator<Entry<String, List<String>>> iter = hostId_hashIds
+					.entrySet().iterator();
+			Set<String> hostIdsets = getMapperHostIds(jobId);
+			while (iter.hasNext()) {
+				Iterator<String> hostIter = hostIdsets.iterator();
+				Entry<String, List<String>> entry = (Entry<String, List<String>>) iter
+						.next();
+				String hostId = (String) entry.getKey();
+				List<String> hashIds = (List<String>) entry.getValue();
 
-			TaskTracker w_taskTracker = this.registeredTaskTrackers.get(hostID);
-			String w_path = "/tmp/" + jobId + '/' + hostID + '/';
-			while (mc_iter.hasNext()) {
-				String curr = mc_iter.next().toString();
-				if (curr.equals(hostID))
-					continue;
-				TaskTracker r_taskTracker = this.registeredTaskTrackers
-						.get(curr);
-				String r_path = "/tmp/" + jobId + '/' + curr + '/';
-				for (int i = 0; i < hashIDs.size(); i++) {
-					List<String> names = r_taskTracker.readDir(r_path + '/',
-							hashIDs.get(i));
-					for (int j = 0; j < names.size(); j++) {
-						String content = r_taskTracker.readStr(r_path + '/',
-								names.get(j));
-						w_taskTracker.writeStr(w_path + '/' + names.get(j),
-								content);
-						System.out.println("Wrote to path:" + w_path + '/'
-								+ names.get(j));
+				TaskTracker wTaskTracker = this.registeredTaskTrackers
+						.get(hostId);
+
+				System.out.println("HashIds : " + hashIds.toString());
+				System.out.println("hostIdsets : " + hostIdsets.toString());
+
+				// System.out.println("wTaskTracker is null?"
+				// + (wTaskTracker == null)); false
+
+				String wPath = "/tmp/" + jobId + "/" + hostId + "/";
+				while (hostIter.hasNext()) {
+					String curr = hostIter.next().toString();
+					if (curr.equals(hostId))
+						continue;
+					TaskTracker rTaskTracker = this.registeredTaskTrackers
+							.get(curr);
+					String rPath = "/tmp/" + jobId + "/" + curr + "/";
+					for (int i = 0; i < hashIds.size(); i++) {
+						System.out.println("Dir To Be Read: " + rPath
+								+ "\t num #" + hashIds.get(i));
+
+						List<String> names = rTaskTracker.readDir(rPath + '/',
+								hashIds.get(i));
+						for (int j = 0; j < names.size(); j++) {
+							String content = rTaskTracker.readStr(rPath,
+									names.get(j));
+							wTaskTracker.writeStr(wPath + '/' + names.get(j),
+									content);
+							System.out.println("Wrote to path:" + wPath + names.get(j));
+						}
 					}
 				}
-			}
 
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * Get the machine IDs of the given job's mappers
+	 * Get the machine Ids of the given job's mappers
 	 * 
-	 * @param jobID
+	 * @param jobId
 	 *            job's id
-	 * @return a set of machine IDs
+	 * @return a set of machine Ids
 	 */
-	public Set<String> getMapperHostIDs(String jobID) {
-		Hashtable<String, String> mapHost = jobMapperHost.get(jobID);
+	public Set<String> getMapperHostIds(String jobId) {
+		Hashtable<String, String> mapHost = jobMapperHost.get(jobId);
 		Iterator<Entry<String, String>> iter = mapHost.entrySet().iterator();
-		Set<String> hostIDs = new HashSet<String>();
+		Set<String> hostIds = new HashSet<String>();
 		while (iter.hasNext()) {
 			Entry<String, String> entry = (Entry<String, String>) iter.next();
 			String val = (String) entry.getValue();
-			hostIDs.add(val);
+			hostIds.add(val);
 		}
-		return hostIDs;
+		return hostIds;
 	}
 
 	/**
@@ -389,32 +417,36 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 *            job's id
 	 * @param write_path
 	 *            path that reducer will write to after reducer phase is over
-	 * @param mcID_hashIDs
+	 * @param hostId_hashIds
 	 */
 	@Override
 	public void startReducer(String jobId, String writePath,
-			HashMap<String, List<String>> hostID_hashIDs) throws RemoteException {
-		Iterator<Entry<String, List<String>>> iter = hostID_hashIDs.entrySet()
+			HashMap<String, List<String>> hostId_hashIds)
+			throws RemoteException {
+		Iterator<Entry<String, List<String>>> iter = hostId_hashIds.entrySet()
 				.iterator();
 		while (iter.hasNext()) {
 			Entry<String, List<String>> entry = (Entry<String, List<String>>) iter
 					.next();
-			String mcID = (String) entry.getKey();
-			List<String> hashIDs = (List<String>) entry.getValue();
-			TaskTracker tt = this.registeredTaskTrackers.get(mcID);
-			for (String id : hashIDs) {
-				String reducer_id = jobId + "_r_" + id;
-				Job job = this.jobId_Job.get(jobId);
+			String hostId = (String) entry.getKey();
+			List<String> hashIds = (List<String>) entry.getValue();
+			TaskTracker tt = this.registeredTaskTrackers.get(hostId);
+			for (String id : hashIds) {
+				String reducerId = jobId + "_r_" + id;
+				Job job = this.jobMap.get(jobId);
 				Class<? extends Reducer> reducer = job.getReducer();
 				String cls_path = job.getReducerPath();
-				tt.startReducer(jobId, reducer_id, writePath, reducer, cls_path);
-				Hashtable<String, String> rcmc = new Hashtable<String, String>();
-				rcmc.put(reducer_id, mcID);
-				jobReducerHost.put(jobId, rcmc);
-				job.addReduceNum();
-				job.setReducer_status(reducer_id, TASK_STATUS.RUNNING);
+				tt.startReducer(jobId, reducerId, writePath, reducer, cls_path);
+
+				if (!jobReducerHost.containsKey(jobId)) {
+					jobReducerHost.put(jobId, new Hashtable<String, String>());
+				}
+				jobReducerHost.get(jobId).put(reducerId, hostId);
+
+				job.addReducerNum();
+				job.setReducerStatus(reducerId, TASK_STATUS.RUNNING);
 				System.out.println("Starting Reducer in JobTracker, job_id:"
-						+ jobId + ", reducer id:" + reducer_id);
+						+ jobId + ", reducer id:" + reducerId);
 			}
 		}
 	}
@@ -422,35 +454,35 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	/**
 	 * Determine if task has finished
 	 * 
-	 * @param jobID
-	 *            ID of the job
+	 * @param jobId
+	 *            Id of the job
 	 * @param tp
 	 *            type of task (mapper/reducer)
 	 * @return
 	 */
-	public boolean isTaskFinished(String jobID, TASK_TYPE tp) {
+	public boolean isTaskFinished(String jobId, TASK_TYPE tp) {
 		System.out.println("Checking ------------------------");
-		Job job = jobId_Job.get(jobID);
-		HashMap<String, TASK_STATUS> task_status = null;
+		Job job = jobMap.get(jobId);
+		HashMap<String, TASK_STATUS> taskStatus = null;
 		if (tp == TASK_TYPE.Mapper)
-			task_status = job.getMapper_status();
+			taskStatus = job.getMapperStatus();
 		else if (tp == TASK_TYPE.Reducer)
-			task_status = job.getReducer_status();
-		Iterator<Entry<String, TASK_STATUS>> iter = task_status.entrySet()
+			taskStatus = job.getReducerStatus();
+		Iterator<Entry<String, TASK_STATUS>> iter = taskStatus.entrySet()
 				.iterator();
 		boolean finished = true;
 		while (iter.hasNext()) {
 			Entry<String, TASK_STATUS> pairs = (Entry<String, TASK_STATUS>) iter
 					.next();
-			String mapperID = (String) pairs.getKey();
+			String mapperId = (String) pairs.getKey();
 			TASK_STATUS status = (TASK_STATUS) pairs.getValue();
 			if (status == TASK_STATUS.RUNNING) {
-				System.out.println("Task " + mapperID + " is running");
+				System.out.println("Task " + mapperId + " is running");
 				finished = false;
 			} else if (status == TASK_STATUS.FINISHED)
-				System.out.println("Task " + mapperID + " is finished");
+				System.out.println("Task " + mapperId + " is finished");
 			else if (status == TASK_STATUS.TERMINATED)
-				System.out.println("Task " + mapperID + " is terminated");
+				System.out.println("Task " + mapperId + " is terminated");
 		}
 		return finished;
 	}
@@ -458,26 +490,26 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	/**
 	 * restart jobs when encountered failure
 	 * 
-	 * @param machineID
-	 *            the ID of machine that was down
-	 * @throws RemoteException 
+	 * @param machineId
+	 *            the Id of machine that was down
+	 * @throws RemoteException
 	 */
-	private void restartJobs(String machineID) throws RemoteException {
+	private void restartJobs(String machineId) throws RemoteException {
 		System.out.println("--------In restart jobs");
-		Set<String> running_jobIDs = runningJobs.get(machineID);
-		System.out.println("Running jobIDs on broken machine " + machineID
-				+ ":" + running_jobIDs.toString());
-		for (String jobID : running_jobIDs) {
-			Job job = this.jobId_Job.get(jobID);
-			HashMap<String, HashMap<String, Integer>> mc_hash_size = job_mc_hash_size
-					.get(jobID);
-			if (mc_hash_size != null)
-				mc_hash_size.remove(machineID);
-			System.out.println("Terminating Job:" + jobID
-					+ " because of machine:" + machineID + " is down");
-			terminateJob(jobID);
-			System.out.println("Restarting Job:" + jobID
-					+ " because of machine:" + machineID + " is down");
+		Set<String> running_jobIds = runningJobs.get(machineId);
+		System.out.println("Running jobIds on broken machine " + machineId
+				+ ":" + running_jobIds.toString());
+		for (String jobId : running_jobIds) {
+			Job job = this.jobMap.get(jobId);
+			HashMap<String, HashMap<String, Integer>> host_hash_size = job_host_hash_size
+					.get(jobId);
+			if (host_hash_size != null)
+				host_hash_size.remove(machineId);
+			System.out.println("Terminating Job:" + jobId
+					+ " because of machine:" + machineId + " is down");
+			terminateJob(jobId);
+			System.out.println("Restarting Job:" + jobId
+					+ " because of machine:" + machineId + " is down");
 			schedule(job);
 		}
 	}
@@ -493,7 +525,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		if (terminated)
 			throw new RemoteException("JobTracker terminating");
 		/* retrieve necessary data */
-		Job job = jobId_Job.get(jobId);
+		Job job = jobMap.get(jobId);
 		int nMapper = job.getMapNum();
 		int nReducer = job.getReduceNum();
 		/*
@@ -502,7 +534,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		 */
 		/* construct status msg */
 		StringBuilder sb = new StringBuilder();
-		sb.append("Job ID: " + jobId + "\n");
+		sb.append("Job Id: " + jobId + "\n");
 		sb.append("Input File: " + job.getFileName() + "\n");
 		sb.append("Output Path: " + job.getOutputFilePath() + "\n");
 		sb.append("Mapper: " + job.getMapper().getName() + "\n");
@@ -533,7 +565,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		if (terminated)
 			throw new RemoteException("JobTracker terminating");
 		StringBuilder sb = new StringBuilder();
-		for (Map.Entry<String, Job> entry : jobId_Job.entrySet()) {
+		for (Map.Entry<String, Job> entry : jobMap.entrySet()) {
 			sb.append("--------------------------------------------------\n");
 			sb.append(describeJob(entry.getKey()));
 		}
@@ -553,16 +585,16 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * terminate all jobs
 	 */
 	private void terminate_allJobs() {
-		Set<Entry<String, Job>> jobset = jobId_Job.entrySet();
+		Set<Entry<String, Job>> jobset = jobMap.entrySet();
 		Iterator<Entry<String, Job>> iter = jobset.iterator();
 		while (iter.hasNext()) {
 			Entry<String, Job> entry = (Entry<String, Job>) iter.next();
-			String jobID = (String) entry.getKey();
+			String jobId = (String) entry.getKey();
 			Job job = (Job) entry.getValue();
 			if (job.getJobStatus() == JOB_STATUS.RUNNING) {
 				System.out.println("Job " + job.getJobId()
 						+ " is running, terminating it");
-				terminateJob(jobID);
+				terminateJob(jobId);
 			}
 		}
 	}
@@ -577,14 +609,14 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * kill a specific job based on jobID
+	 * kill a specific job based on jobId
 	 * 
-	 * @param jobID
+	 * @param jobId
 	 */
-	public void kill(String jobID) throws RemoteException {
+	public void kill(String jobId) throws RemoteException {
 		if (this.terminated)
 			return;
-		this.terminateJob(jobID);
+		this.terminateJob(jobId);
 	}
 
 	/*
@@ -594,12 +626,18 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 */
 	@Override
 	public void run() {
+		try {
+			this.healthCheck();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * periodically check if TaskTrackers are still alive by sending heartbeat
 	 * request to TaskTrackers
-	 * @throws RemoteException 
+	 * 
+	 * @throws RemoteException
 	 */
 	@Override
 	public void healthCheck() throws RemoteException {
@@ -612,19 +650,19 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 			while (iter.hasNext()) {
 				Entry<String, TaskTracker> ent = (Entry<String, TaskTracker>) iter
 						.next();
-				String machineID = (String) ent.getKey();
+				String machineId = (String) ent.getKey();
 				TaskTracker tt = (TaskTracker) ent.getValue();
 				try {
 					tt.heartBeat();
 				} catch (RemoteException e) {
-					System.out.println("Warning: TaskTracker on " + machineID
+					System.out.println("Warning: TaskTracker on " + machineId
 							+ " has dead");
-					this.registeredTaskTrackers.remove(machineID);
-					restartJobs(machineID);
+					this.registeredTaskTrackers.remove(machineId);
+					restartJobs(machineId);
 				}
 			}
 			try {
-				TimeUnit.SECONDS.sleep(1);
+				TimeUnit.SECONDS.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -640,24 +678,44 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 */
 	@Override
 	public void allocateMapper(String hostId, String mapId, String blockId,
-			String readFromHost, Job job, Hashtable<String, String> hostMapper)
-			throws RemoteException {
+			String readFromHost, Job job) throws RemoteException {
 		TaskTracker taskTracker;
 		taskTracker = this.registeredTaskTrackers.get(hostId);
 		taskTracker.setReducerNum(reducerNum);
-		hostMapper.put(hostId, mapId);
 
-		jobMapperHost.put(job.getJobId(), hostMapper);
+		if (!jobMapperHost.containsKey(job.getJobId())) {
+			jobMapperHost.put(job.getJobId(), new Hashtable<String, String>());
+		}
+
+		jobMapperHost.get(job.getJobId()).put(mapId, hostId);
+
 		System.out.println("prepare to start mapper");
 
 		taskTracker.startMapper(job.getJobId(), mapId, blockId, readFromHost,
 				job.getMapper(), job.getMapperPath());
 		System.out.println("Mapper");
-		job.setMapper_status(mapId, TASK_STATUS.RUNNING);
+		job.setMapperStatus(mapId, TASK_STATUS.RUNNING);
 		job.addMapNum();
-		jobId_Job.put(job.getJobId(), job);
-		System.out.println("Job Tracker trying to start map task on "
-				+ String.valueOf(hostId) + ", mapperID:" + mapId);
+		jobMap.put(job.getJobId(), job);
+		System.out.println("Job Tracker trying to start map task on Host "
+				+ String.valueOf(hostId) + ", mapperId:" + mapId);
+
+		// prepare the job_host_hash_size. Since we decide to randomize it the
+		// choosing, we make it 0 everywhere.
+		if (this.job_host_hash_size.get(job.getJobId()) == null) {
+			this.job_host_hash_size.put(job.getJobId(),
+					new HashMap<String, HashMap<String, Integer>>());
+		}
+		if (this.job_host_hash_size.get(job.getJobId()).get(hostId) == null) {
+			this.job_host_hash_size.get(job.getJobId()).put(hostId,
+					new HashMap<String, Integer>());
+
+			for (int i = 0; i < reducerNum; i++) {
+				this.job_host_hash_size.get(job.getJobId()).get(hostId)
+						.put(i + "", 0);
+			}
+		}
+
 	}
 
 	/*
@@ -669,54 +727,57 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	public void checkHeartbeat(Message message) throws RemoteException {
 		if (message.getTaskType() == TASK_TYPE.Mapper) {
 			if (message.getTaskStat() == TASK_STATUS.FINISHED) {
-				String jobID = message.getJobId();
-				String taskID = message.getTaskId();
-				String machineID = message.getHostId();
+				String jobId = message.getJobId();
+				String taskId = message.getTaskId();
+				String machineId = message.getHostId();
 				System.out.println("Mapper Finished!");
-				Job job = jobId_Job.get(jobID);
-				job.setMapper_status(taskID, TASK_STATUS.FINISHED);
-				int aval_cpus = this.availableSlots.get(machineID);
-				aval_cpus++;
-				availableSlots.put(machineID, aval_cpus);
+				Job job = jobMap.get(jobId);
+				job.setMapperStatus(taskId, TASK_STATUS.FINISHED);
+				int avalCPUs = this.availableSlots.get(machineId);
+				avalCPUs++;
+				availableSlots.put(machineId, avalCPUs);
 
-				@SuppressWarnings("unchecked")
-				HashMap<String, Integer> ret = (HashMap<String, Integer>) message
-						.getContent();
-				HashMap<String, HashMap<String, Integer>> mc_hash_size = job_mc_hash_size
-						.get(jobID);
-				if (mc_hash_size == null) {
-					HashMap<String, HashMap<String, Integer>> f_mc_hash_size = new HashMap<String, HashMap<String, Integer>>();
-					f_mc_hash_size.put(machineID, ret);
-					job_mc_hash_size.put(jobID, f_mc_hash_size);
-				} else {
-					mc_hash_size.put(machineID, ret);
-				}
-				if (isTaskFinished(jobID, TASK_TYPE.Mapper)) {
-					System.out.println("Mapper Job finished");
-					HashMap<String, List<String>> mcID_hashIDs = chooseReducer(jobID);
-					System.out.println("Before Shuffle, mcID_hashIDs:"
-							+ mcID_hashIDs.toString());
-					shuffle(jobID, mcID_hashIDs);
-					System.out.println("After Shuffle, mcID_hashIDs:"
-							+ mcID_hashIDs.toString());
-					startReducer(jobID, this.jobId_OutputFileDir.get(jobID),
-							mcID_hashIDs);
+				/*
+				 * @SuppressWarnings("unchecked") HashMap<String, Integer> ret =
+				 * (HashMap<String, Integer>) message .getContent();
+				 */
+				/*
+				 * HashMap<String, HashMap<String, Integer>> host_hash_size =
+				 * job_host_hash_size .get(jobId); /* if (host_hash_size ==
+				 * null) { HashMap<String, HashMap<String, Integer>>
+				 * f_host_hash_size = new HashMap<String, HashMap<String,
+				 * Integer>>(); f_host_hash_size.put(machineId, ret);
+				 * .put(jobId, f_host_hash_size); } else {
+				 * host_hash_size.put(machineId, ret); }
+				 */
+				if (isTaskFinished(jobId, TASK_TYPE.Mapper)) {
+					System.out.println("Mapper Job with JobId " + jobId
+							+ " finished");
+					HashMap<String, List<String>> hostIdHashIds = this
+							.chooseReducer(jobId);
+					System.out.println("Before Shuffle, hostId_hashIds:"
+							+ hostIdHashIds.toString());
+					shuffle(jobId, hostIdHashIds);
+					System.out.println("After Shuffle, hostId_hashIds:"
+							+ hostIdHashIds.toString());
+					startReducer(jobId, this.jobIdOutputDir.get(jobId),
+							hostIdHashIds);
 				}
 			}
 		} else if (message.getTaskType() == TASK_TYPE.Reducer) {
 			if (message.getTaskStat() == TASK_STATUS.FINISHED) {
-				String jobID = message.getJobId();
-				String taskID = message.getTaskId();
-				String machineID = message.getHostId();
-				Job job = jobId_Job.get(jobID);
-				int aval_cpus = this.availableSlots.get(machineID);
+				String jobId = message.getJobId();
+				String taskId = message.getTaskId();
+				String machineId = message.getHostId();
+				Job job = jobMap.get(jobId);
+				int aval_cpus = this.availableSlots.get(machineId);
 				aval_cpus++;
-				availableSlots.put(machineID, aval_cpus);
-				job.setReducer_status(taskID, TASK_STATUS.FINISHED);
-				if (isTaskFinished(jobID, TASK_TYPE.Reducer)) {
+				availableSlots.put(machineId, aval_cpus);
+				job.setReducerStatus(taskId, TASK_STATUS.FINISHED);
+				if (isTaskFinished(jobId, TASK_TYPE.Reducer)) {
 					System.out.println("All Reducer finished");
 					job.setJobStatus(JOB_STATUS.FINISHED);
-					removeFromRunningJobs(jobID);
+					removeFromRunningJobs(jobId);
 				}
 			}
 		}
@@ -729,49 +790,49 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	/**
 	 * maintain integrity of running_jobs
 	 * 
-	 * @param jobID
+	 * @param jobId
 	 */
-	private void removeFromRunningJobs(String jobID) {
+	private void removeFromRunningJobs(String jobId) {
 		Set<Entry<String, Set<String>>> set = runningJobs.entrySet();
 		Iterator<Entry<String, Set<String>>> iter = set.iterator();
 		while (iter.hasNext()) {
 			Entry<String, Set<String>> entry = (Entry<String, Set<String>>) iter
 					.next();
-			Set<String> jobIDs = (Set<String>) entry.getValue();
-			for (String running_jobID : jobIDs) {
-				if (running_jobID.equals(jobID)) {
-					jobIDs.remove(running_jobID);
+			Set<String> jobIds = (Set<String>) entry.getValue();
+			for (String running_jobId : jobIds) {
+				if (running_jobId.equals(jobId)) {
+					jobIds.remove(running_jobId);
 				}
 			}
 		}
 	}
 
 	/**
-	 * terminate specific job based on jobID
+	 * terminate specific job based on jobId
 	 * 
-	 * @param jobID
+	 * @param jobId
 	 */
-	public void terminateJob(String jobID) {
+	public void terminateJob(String jobId) {
 		System.out.println("--------In terminate Job");
-		Job job = jobId_Job.get(jobID);
-		HashMap<String, TASK_STATUS> mapper_status = null;
-		HashMap<String, TASK_STATUS> reducer_status = null;
-		mapper_status = job.getMapper_status();
-		reducer_status = job.getReducer_status();
-		terminate_mappers(jobID, mapper_status);
-		terminate_reducers(jobID, reducer_status);
+		Job job = jobMap.get(jobId);
+		HashMap<String, TASK_STATUS> mapperStatus = null;
+		HashMap<String, TASK_STATUS> reducerStatus = null;
+		mapperStatus = job.getMapperStatus();
+		reducerStatus = job.getReducerStatus();
+		terminateMappers(jobId, mapperStatus);
+		terminateReducers(jobId, reducerStatus);
 		job.setJobStatus(JOB_STATUS.TERMINATED);
 	}
 
 	/**
 	 * terminate mapper tasks
 	 * 
-	 * @param jobID
-	 *            ID of job
+	 * @param jobId
+	 *            Id of job
 	 * @param mapper_status
 	 *            status of mapper tasks of this job
 	 */
-	private void terminate_mappers(String jobID,
+	private void terminateMappers(String jobId,
 			HashMap<String, TASK_STATUS> mapper_status) {
 		System.out.println("----------In terminate_mappers");
 		Iterator<Entry<String, TASK_STATUS>> miter = mapper_status.entrySet()
@@ -779,18 +840,18 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		while (miter.hasNext()) {
 			Entry<String, TASK_STATUS> pairs = (Entry<String, TASK_STATUS>) miter
 					.next();
-			String mapperID = (String) pairs.getKey();
-			String machineID = jobMapperHost.get(jobID).get(mapperID);
+			String mapperId = (String) pairs.getKey();
+			String machineId = jobMapperHost.get(jobId).get(mapperId);
 			TASK_STATUS status = (TASK_STATUS) pairs.getValue();
 			if (status == TASK_STATUS.RUNNING) {
 				TaskTracker tt;
 				try {
-					tt = this.registeredTaskTrackers.get(machineID);
+					tt = this.registeredTaskTrackers.get(machineId);
 					if (tt != null) {
-						tt.terminate(mapperID);
-						System.out.println("Task " + mapperID
+						tt.terminate(mapperId);
+						System.out.println("Task " + mapperId
 								+ " is terminated");
-						this.jobId_Job.get(jobID).setMapper_status(mapperID,
+						this.jobMap.get(jobId).setMapperStatus(mapperId,
 								TASK_STATUS.TERMINATED);
 					}
 				} catch (AccessException e) {
@@ -799,38 +860,38 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					e.printStackTrace();
 				}
 			} else if (status == TASK_STATUS.FINISHED)
-				System.out.println("Task " + mapperID + " is finished");
+				System.out.println("Task " + mapperId + " is finished");
 		}
 	}
 
 	/**
 	 * terminate reducer tasks
 	 * 
-	 * @param jobID
-	 *            ID of job
-	 * @param reducer_status
+	 * @param jobId
+	 *            Id of job
+	 * @param reducerStatus
 	 *            status of reducer tasks of this job
 	 */
-	private void terminate_reducers(String jobID,
-			HashMap<String, TASK_STATUS> reducer_status) {
+	private void terminateReducers(String jobId,
+			HashMap<String, TASK_STATUS> reducerStatus) {
 		System.out.println("----------In terminate_reducers");
-		Iterator<Entry<String, TASK_STATUS>> riter = reducer_status.entrySet()
+		Iterator<Entry<String, TASK_STATUS>> riter = reducerStatus.entrySet()
 				.iterator();
 		while (riter.hasNext()) {
 			Entry<String, TASK_STATUS> pairs = (Entry<String, TASK_STATUS>) riter
 					.next();
-			String reducerID = (String) pairs.getKey();
-			String machineID = jobReducerHost.get(jobID).get(reducerID);
+			String reducerId = (String) pairs.getKey();
+			String machineId = jobReducerHost.get(jobId).get(reducerId);
 			TASK_STATUS status = (TASK_STATUS) pairs.getValue();
 			if (status == TASK_STATUS.RUNNING) {
 				TaskTracker tt;
 				try {
-					tt = this.registeredTaskTrackers.get(machineID);
+					tt = this.registeredTaskTrackers.get(machineId);
 					if (tt != null) {
-						tt.terminate(reducerID);
-						System.out.println("Task " + reducerID
+						tt.terminate(reducerId);
+						System.out.println("Task " + reducerId
 								+ " is terminated");
-						this.jobId_Job.get(jobID).setReducer_status(reducerID,
+						this.jobMap.get(jobId).setReducerStatus(reducerId,
 								TASK_STATUS.TERMINATED);
 					}
 				} catch (AccessException e) {
@@ -839,7 +900,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					e.printStackTrace();
 				}
 			} else if (status == TASK_STATUS.FINISHED)
-				System.out.println("Task " + reducerID + " is finished");
+				System.out.println("Task " + reducerId + " is finished");
 		}
 	}
 
@@ -874,23 +935,15 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		int mrPort = Integer.valueOf(args[0]);
 		String dfsHost = args[1];
 		int dfsPort = Integer.valueOf(args[2]);
-		
+
 		int selfPort = Integer.valueOf(args[3]);
-		int reducer_ct = Integer.valueOf(args[4]);
+		int reducerCount = Integer.valueOf(args[4]);
 		try {
-			jt.initialize(mrPort, dfsHost, dfsPort, selfPort, reducer_ct);
+			jt.initialize(mrPort, dfsHost, dfsPort, selfPort, reducerCount);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 
-	}
-
-	public String getJobId() {
-		return jobId;
-	}
-
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
 	}
 
 	public JOB_STATUS getJobStatus() {

@@ -16,9 +16,9 @@ import mr.io.Writable;
 
 /**
  * @author Nicolas_Yu
- *
+ * 
  */
-public class Reducer <K1, V1, K2, V2> implements Serializable{
+public class Reducer<K1, V1, K2, V2> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -26,8 +26,8 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	private PriorityQueue<RecordLine> records;
 	private ArrayList<RecordLine> reduceLines;
 
-
-	public void reduce(TextWritable key, Iterable<Writable> values, Context context) {
+	public void reduce(TextWritable key, Iterable<Writable> values,
+			Context context) {
 
 	}
 
@@ -46,7 +46,11 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 				String line = null;
 
 				while ((line = br.readLine()) != null) {
+					//System.out.println("Reducer: " + line);
 					String[] splits = line.split("\t");
+					if(splits.length < 2){
+						continue;
+					}
 					TextWritable key = new TextWritable();
 					TextWritable value = new TextWritable();
 					key.setVal(splits[0]);
@@ -62,7 +66,7 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 			}
 		}
 	}
-	
+
 	public void combineValue() {
 		if (records.isEmpty()) {
 			return;
@@ -73,7 +77,7 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 			Writable key = records.peek().getKey();
 			if (key.getVal().hashCode() == currentKey.getVal().hashCode()) {
 				RecordLine temp = records.poll();
-				item.addValue((Writable)temp.getValue().iterator().next());
+				item.addValue((Writable) temp.getValue().iterator().next());
 			} else {
 				reduceLines.add(item);
 				item = records.poll();
@@ -90,7 +94,8 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	}
 
 	/**
-	 * @param shuffleDir the shuffleDir to set
+	 * @param shuffleDir
+	 *            the shuffleDir to set
 	 */
 	public void setShuffleDir(String shuffleDir) {
 		this.shuffleDir = shuffleDir;
@@ -104,7 +109,8 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	}
 
 	/**
-	 * @param records the records to set
+	 * @param records
+	 *            the records to set
 	 */
 	public void setRecords(PriorityQueue<RecordLine> records) {
 		this.records = records;
@@ -118,7 +124,8 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	}
 
 	/**
-	 * @param reduceLines the reduceLines to set
+	 * @param reduceLines
+	 *            the reduceLines to set
 	 */
 	public void setReduceLines(ArrayList<RecordLine> reduceLines) {
 		this.reduceLines = reduceLines;

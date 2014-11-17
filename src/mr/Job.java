@@ -285,28 +285,28 @@ public class Job implements Serializable{
 	/**
 	 * @return the mapper_status
 	 */
-	public HashMap<String, TASK_STATUS> getMapper_status() {
+	public HashMap<String, TASK_STATUS> getMapperStatus() {
 		return mapper_status;
 	}
 
 	/**
 	 * @param mapper_status the mapper_status to set
 	 */
-	public void setMapper_status(String mapId, TASK_STATUS status) {
+	public void setMapperStatus(String mapId, TASK_STATUS status) {
 		this.mapper_status.put(mapId, status);
 	}
 
 	/**
 	 * @return the reducer_status
 	 */
-	public HashMap<String, TASK_STATUS> getReducer_status() {
+	public HashMap<String, TASK_STATUS> getReducerStatus() {
 		return reducer_status;
 	}
 
 	/**
 	 * @param reducer_status the reducer_status to set
 	 */
-	public void setReducer_status(String reduceId, TASK_STATUS status) {
+	public void setReducerStatus(String reduceId, TASK_STATUS status) {
 		this.reducer_status.put(reduceId, status);
 	}
 	
@@ -320,7 +320,7 @@ public class Job implements Serializable{
 	/**
 	 * Increase the num of Mapper 
 	 */
-	public void addReduceNum() {
+	public void addReducerNum() {
 		this.reduceNum++;
 	}
 

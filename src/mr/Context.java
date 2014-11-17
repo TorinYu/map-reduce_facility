@@ -12,11 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
-import java.util.TreeMap;
-
-import com.sun.xml.internal.bind.v2.TODO;
 
 import mr.Type.TASK_TYPE;
 import mr.io.TextWritable;
@@ -69,8 +65,8 @@ public class Context {
 		File writeOutPath = new File(partitionOutPath);
 		if (!writeOutPath.exists()) {
 			boolean made = writeOutPath.mkdirs();
-			//System.out.println("Did we make it? " + made);
-			//System.out.println("Output Path is " + writeOutPath);
+			// System.out.println("Did we make it? " + made);
+			// System.out.println("Output Path is " + writeOutPath);
 		}
 		if (!mapContent.isEmpty()) {
 			writeToFile();
@@ -127,7 +123,7 @@ public class Context {
 	 * write the content to file when buffer is full for Map
 	 */
 	private void writeToFile() {
-		//System.out.println("Entering Write to File");
+		// System.out.println("Entering Write to File");
 
 		File pathFile = new File(mapContentFilePath);
 		if (!pathFile.exists()) {
@@ -136,14 +132,14 @@ public class Context {
 
 		try {
 			File file = new File(mapContentFilePath + numOfFiles);
-			if (taskType == TASK_TYPE.Mapper){
-				//System.out.println(taskType.toString());
+			if (taskType == TASK_TYPE.Mapper) {
+				// System.out.println(taskType.toString());
 				numOfFiles++;
 			}
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
 			Collections.sort(this.mapContent);
 			for (RecordLine record : mapContent) {
-				//System.out.println("To Write: " + record.getKey().getVal() );
+				// System.out.println("To Write: " + record.getKey().getVal() );
 				bw.write(record.getKey().getVal() + "\t"
 						+ record.getValue().iterator().next().getVal());
 				bw.write("\n");
@@ -162,11 +158,12 @@ public class Context {
 	 * @param value
 	 */
 	public void write(Writable key, Writable value) {
-		//System.out.println("Write a new record " + key.getVal() + " " + value.getVal());
+		// System.out.println("Write a new record " + key.getVal() + " " +
+		// value.getVal());
 		RecordLine record = new RecordLine(new TextWritable(key.getVal()));
 		record.addValue(value);
 		this.mapContent.add(record);
-		
+
 		if (mapContent.size() == bufferSize) {
 			writeToFile();
 		}

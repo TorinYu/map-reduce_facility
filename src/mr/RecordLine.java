@@ -28,7 +28,7 @@ public class RecordLine implements Comparable<RecordLine> {
 	 */
 	@Override
 	public int compareTo(RecordLine o) {
-		return this.key.getVal().hashCode() - o.key.getVal().hashCode();
+		return (int) Math.signum( Math.abs(this.key.getVal().hashCode()) - Math.abs(o.key.getVal().hashCode()));
 	}
 
 

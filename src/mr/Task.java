@@ -74,32 +74,34 @@ public class Task implements Callable<Object> {
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
-	public Object call() {
-		//System.out.println(type.toString());
-
+	public Type.TASK_STATUS call() {
+		// System.out.println(type.toString());
+		if (Thread.interrupted()) {
+			return Type.TASK_STATUS.TERMINATED;
+		}
 		if (type == TASK_TYPE.Mapper) {
 			try {
 				Mapper<TextWritable, TextWritable, TextWritable, IntWritable> mapClass = mapper
 						.newInstance();
 				String outputPath = "/tmp/" + jobId + "/" + hostId + '/';
-				
+
 				Context context = new Context(jobId, taskId, reduceNum,
 						outputPath, TASK_TYPE.Mapper);
 
 				DataNode dataNode = nameNode.fetchDataNode(dataNodeId);
 				String content = dataNode.fetchStringBlock(blockId);
-				//System.out.println("Content is " + content);
+				// System.out.println("Content is " + content);
 				String[] lines = content.split("\n");
 				for (int i = 0; i < lines.length; i++) {
-					//System.out.println("Line " + i + " is " + lines[i]);
+					// System.out.println("Line " + i + " is " + lines[i]);
 					String line = lines[i];
 					TextWritable key = new TextWritable();
 					TextWritable value = new TextWritable();
 					value.setVal(line);
-					
 					mapClass.map(key, value, context);
 				}
 				context.partionMapContent();
+
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			} catch (RemoteException e) {
@@ -109,16 +111,14 @@ public class Task implements Callable<Object> {
 			}
 			return Type.TASK_STATUS.FINISHED;
 		} else { // Reducer Task
-			Reducer<Writable, Writable, Writable, Object> reducerClass;
+			Reducer<Writable, Writable, Writable, Writable> reducerClass;
 			try {
 				reducerClass = reducer.newInstance();
-
 				Context context = new Context(jobId, taskId, reduceNum,
 						outputPath, TASK_TYPE.Reducer);
-				// String partition_id = task_id.split("_r_")[1].trim();
-				String input_dir = "/tmp/" + jobId + '/' + hostId + '/';
+				String inputDir = "/tmp/" + jobId + '/' + hostId + '/';
 
-				reducerClass.initialize(input_dir);
+				reducerClass.initialize(inputDir);
 				reducerClass.mergePartition();
 
 				ArrayList<RecordLine> reduceLines = reducerClass
@@ -136,8 +136,8 @@ public class Task implements Callable<Object> {
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
+			return Type.TASK_STATUS.FINISHED;
 		}
-		return Type.TASK_STATUS.FINISHED;
 
 	}
 
@@ -202,7 +202,6 @@ public class Task implements Callable<Object> {
 		this.inputPath = input_path;
 	}
 
-	
 	/**
 	 * @return the taskType
 	 */
@@ -359,6 +358,5 @@ public class Task implements Callable<Object> {
 	public void setReadDir(String readDir) {
 		this.readDir = readDir;
 	}
-
 
 }

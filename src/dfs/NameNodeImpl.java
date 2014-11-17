@@ -100,8 +100,6 @@ public class NameNodeImpl implements NameNode {
 
 	@Override
 	public DataNode fetchDataNode(int id) throws RemoteException {
-		if (isTerminating)
-			throw new RemoteException("DFS terminating");
 		DataNode node = null;
 		try {
 			node = (DataNode) registry.lookup(DATA + id);
