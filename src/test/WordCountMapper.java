@@ -13,13 +13,14 @@ public class WordCountMapper extends
 	private final static IntWritable one = new IntWritable(1);
 	private TextWritable word = new TextWritable();
 
-	public void map(IntWritable key, TextWritable value, Context context) {
+	@Override
+	public void map(TextWritable key, TextWritable value, Context context) {
 		String line = value.toString();
+		System.out.println("Read Line :" + line);
 		StringTokenizer tokenizer = new StringTokenizer(line);
 		while (tokenizer.hasMoreTokens()) {
 			word.setVal(tokenizer.nextToken());
 			context.write(word, one);
 		}
 	}
-
 }

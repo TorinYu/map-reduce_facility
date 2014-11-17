@@ -28,7 +28,6 @@ public class RecordLine implements Comparable<RecordLine> {
 	 */
 	@Override
 	public int compareTo(RecordLine o) {
-		// TODO Auto-generated method stub
 		return this.key.getVal().hashCode() - o.key.getVal().hashCode();
 	}
 
@@ -65,7 +64,7 @@ public class RecordLine implements Comparable<RecordLine> {
 	}
 	
 	public void addValue(Writable value) {
-		((LinkedList<Writable>)value).add(value);
+		((LinkedList<Writable>)this.value).add(value);
 	}
 
 }

@@ -3,16 +3,19 @@
  */
 package mr;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 import dfs.DataNode;
 import dfs.NameNode;
 import mr.Type.TASK_TYPE;
+import mr.io.IntWritable;
 import mr.io.TextWritable;
 import mr.io.Writable;
 
@@ -20,7 +23,7 @@ import mr.io.Writable;
  * @author Nicolas_Yu
  * 
  */
-public class Task implements Runnable {
+public class Task implements Callable<Object> {
 
 	private static final String NAMENODE = "namenode";
 	private Class<? extends Mapper> mapper = null;
@@ -60,10 +63,8 @@ public class Task implements Runnable {
 			hdfsRegistry = LocateRegistry.getRegistry(host, port);
 			nameNode = (NameNode) hdfsRegistry.lookup(NAMENODE);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NotBoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -73,40 +74,42 @@ public class Task implements Runnable {
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
-	public void run() {
-		// TODO Auto-generated method stub
+	public Object call() {
+		//System.out.println(type.toString());
+
 		if (type == TASK_TYPE.Mapper) {
 			try {
-				Mapper<Object, Object, Object, Object> mapClass = mapper
+				Mapper<TextWritable, TextWritable, TextWritable, IntWritable> mapClass = mapper
 						.newInstance();
-				String outputPath = "/tmp" + jobId + "/" + hostId + '/';
+				String outputPath = "/tmp/" + jobId + "/" + hostId + '/';
+				
 				Context context = new Context(jobId, taskId, reduceNum,
 						outputPath, TASK_TYPE.Mapper);
-				// Waiting for JerrySun's API
+
 				DataNode dataNode = nameNode.fetchDataNode(dataNodeId);
 				String content = dataNode.fetchStringBlock(blockId);
-				String[] lines = content.split("\\n");
+				//System.out.println("Content is " + content);
+				String[] lines = content.split("\n");
 				for (int i = 0; i < lines.length; i++) {
+					//System.out.println("Line " + i + " is " + lines[i]);
 					String line = lines[i];
 					TextWritable key = new TextWritable();
 					TextWritable value = new TextWritable();
-
 					value.setVal(line);
+					
 					mapClass.map(key, value, context);
 				}
 				context.partionMapContent();
 			} catch (InstantiationException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} else { // Reduce Task
-			Reducer<Object, Object, Object, Object> reducerClass;
+			return Type.TASK_STATUS.FINISHED;
+		} else { // Reducer Task
+			Reducer<Writable, Writable, Writable, Object> reducerClass;
 			try {
 				reducerClass = reducer.newInstance();
 
@@ -129,13 +132,12 @@ public class Task implements Runnable {
 					reducerClass.reduce(key, values, context);
 				}
 			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		return Type.TASK_STATUS.FINISHED;
 
 	}
 
@@ -147,7 +149,7 @@ public class Task implements Runnable {
 	 * @param
 	 */
 	public void setTaskType(TASK_TYPE type) {
-		// TODO Auto-generated method stub
+		this.type = type;
 
 	}
 
@@ -181,7 +183,7 @@ public class Task implements Runnable {
 	 * @param reduceNum
 	 *            the reduceNum to set
 	 */
-	public void setReduceNum(int reduceNum) {
+	public void setReducerNum(int reduceNum) {
 		this.reduceNum = reduceNum;
 	}
 
@@ -200,21 +202,7 @@ public class Task implements Runnable {
 		this.inputPath = input_path;
 	}
 
-	/**
-	 * @return the output_path
-	 */
-	public String getOutput_path() {
-		return outputPath;
-	}
-
-	/**
-	 * @param output_path
-	 *            the output_path to set
-	 */
-	public void setOutput_path(String output_path) {
-		this.outputPath = output_path;
-	}
-
+	
 	/**
 	 * @return the taskType
 	 */
@@ -371,5 +359,6 @@ public class Task implements Runnable {
 	public void setReadDir(String readDir) {
 		this.readDir = readDir;
 	}
+
 
 }

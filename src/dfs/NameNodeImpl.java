@@ -184,7 +184,7 @@ public class NameNodeImpl implements NameNode {
 		for (Map.Entry<Integer, BlockInfo> entry : blockInfos.entrySet())
 			dfs.append(entry.getValue().toString() + "\n");
 		dfs.append("========= DATANODE INFO =========\n");
-		dfs.append("DataNode Id\tBlock Ids\tState");
+		dfs.append("DataNode Id\tBlock Ids\tState\n");
 		for (Map.Entry<Integer, DataNodeMeta> entry : dataNodeMap.entrySet())
 			dfs.append(entry.getValue().toString() + "\n");
 		return dfs.toString();
@@ -363,7 +363,7 @@ public class NameNodeImpl implements NameNode {
 		try {
 			node.healthCheck();
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 }

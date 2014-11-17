@@ -54,7 +54,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	String inputDir = null;
 
 	JobTracker jobTracker = null;
-	int reduceNum = 0;
+	int reducerNum = 0;
 
 	boolean terminated = false;
 
@@ -79,11 +79,11 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 					this.mapReduceRegistryHost, this.mapReducePort);
 			this.inputDir = inputDir;
 			jobTracker = (JobTracker) mapReduceRegistry.lookup("JobTracker");
-			this.reduceNum = reduceNum;
+			this.reducerNum = reduceNum;
 			this.port = selfPort;
 
 			this.hostId = String.valueOf(taskId);
-			
+
 			executorService = Executors.newCachedThreadPool();
 			executorService.submit(this);
 		} catch (RemoteException e) {
@@ -100,7 +100,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	 *            ID of the task
 	 */
 	public void terminate(String taskID) {
-		Future f = taskFuture.get(taskID);
+		Future<?> f = taskFuture.get(taskID);
 		((java.util.concurrent.Future<?>) f).cancel(true);
 		System.out.println("Task " + taskID + " terminated");
 	}
@@ -115,7 +115,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 			Integer avalProcs = new Integer(Runtime.getRuntime()
 					.availableProcessors());
 			System.out.println("Avalible CPU numbers:" + avalProcs.toString());
-			initialMsg.setAval_procs(avalProcs);
+			initialMsg.setAvalProcs(avalProcs);
 			initialMsg.setMessageType(MESSAGE_TYPE.HEARTBEAT);
 			initialMsg.setHostId(hostId);
 			this.heartbeats.offer(initialMsg);
@@ -130,8 +130,8 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	 * @see mr.TaskTracker#setReduceNum()
 	 */
 	@Override
-	public void setReduceNum(int reduceNum) {
-		this.reduceNum = reduceNum;
+	public void setReducerNum(int reducerNum) {
+		this.reducerNum = reducerNum;
 
 	}
 
@@ -143,19 +143,19 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	@Override
 	public void startMapper(String jobId, String mapId, String blockId,
 			String readFromHost, Class<? extends Mapper> mapper,
-			String maperPath) {
+			String mapperPath) {
 		Downloader dn = new Downloader(hdfsRegistryHost, hdfsPort);
-		dn.download(maperPath, maperPath);
+		dn.download(mapperPath, mapperPath);
 
 		Task task = new Task(jobId, mapId, hdfsRegistryHost, hdfsPort);
 		task.setTaskType(Type.TASK_TYPE.Mapper);
 		task.setBlockId(Integer.parseInt(blockId));
-		task.setReduceNum(reduceNum);
+		task.setReducerNum(reducerNum);
 		task.setMapper(mapper);
 		task.setReadDir(inputDir);
 		task.setHostId(hostId);
 		task.setDataNodeId(Integer.parseInt(readFromHost));
-		Future f1 = executorService.submit(task);
+		Future<?> f1 = executorService.submit(task);
 		taskFuture.put(mapId, f1);
 
 		Message msg = new Message();
@@ -182,10 +182,10 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		Task task = new Task(jobId, reducerId, hdfsRegistryHost, hdfsPort);
 		task.setTaskType(Type.TASK_TYPE.Reducer);
 		task.setReducer(reducer);
-		task.setOutput_path(writePath);
-		task.setReduceNum(reduceNum);
+		task.setOutputPath(writePath);
+		task.setReducerNum(reducerNum);
 		task.setHostId(hostId);
-		Future f1 = (Future) executorService.submit(task);
+		Future<?> f1 = (Future<?>) executorService.submit(task);
 		taskFuture.put(reducerId, f1);
 
 		Message msg = new Message();
@@ -194,7 +194,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		msg.setTaskType(TASK_TYPE.Reducer);
 		msg.setTaskStat(TASK_STATUS.RUNNING);
 		msg.setHostId(String.valueOf(hostId));
-		msg.setOutput_path(writePath);
+		msg.setOutputPath(writePath);
 		msg.setFuture(f1);
 		this.heartbeats.offer(msg);
 	}
@@ -244,16 +244,16 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	public List<String> readDir(String path, String hashID) {
 		File dir = new File(path);
 		File[] files = dir.listFiles();
-		List<String> ret_names = new ArrayList<String>();
+		List<String> retNames = new ArrayList<String>();
 		for (int i = 0; i < files.length; i++) {
 			String name = files[i].getName();
 			String tmp[] = name.split("@");
 			if (tmp.length > 0)
 				if (tmp[tmp.length - 1].equals(hashID)) {
-					ret_names.add(name);
+					retNames.add(name);
 				}
 		}
-		return ret_names;
+		return retNames;
 	}
 
 	/*
@@ -300,6 +300,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		if (f != null) {
 			if (f.isDone()) {
 				try {
+					System.out.println("F.get() is null? " + (f.get() == null));
 					if (f.get() == TASK_STATUS.TERMINATED) {
 						msg.setTaskStat(TASK_STATUS.TERMINATED);
 						msg.setFuture(null);
@@ -342,7 +343,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	private void checkReducer(Message msg) {
 		Future f1 = msg.getFuture();
 		String reducer_id = msg.getTaskId();
-		String output_path = msg.getOutput_path();
+		String output_path = msg.getOutputPath();
 		if (f1 != null) {
 			if (f1.isDone()) {
 				try {

@@ -1,13 +1,6 @@
 package test;
 
-import java.util.StringTokenizer;
-import mr.io.IntWritable;
-import mr.io.TextWritable;
-import mr.io.Writable;
-import mr.Context;
 import mr.Job;
-import mr.Mapper;
-import mr.Reducer;
 
 public class WordCount {
 	public static void main(String[] args) throws Exception {
@@ -17,7 +10,8 @@ public class WordCount {
 		job.setInputFilePath(input);
 		job.setFileName(input);
 		job.setOutputFilePath(output);
-
+		job.setMapperPath("test/WordCountMapper.class");
+		job.setReducerPath("test/WordCountMapper.class");
 		job.setMapper(WordCountMapper.class);
 		job.setReducer(WordCountReducer.class);
 		job.submit();

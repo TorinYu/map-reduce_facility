@@ -166,18 +166,18 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 							.valueOf(hostId)))
 						continue;
 					System.out.println("MachineID:" + hostId.toString());
-					int avaiSlots = this.availableSlots.get(String
+					int availableSlots = this.availableSlots.get(String
 							.valueOf(hostId));
 					System.out.println("Aval Slots NUM:" + availableSlots);
-					if (avaiSlots > 0) {
+					if (availableSlots > 0) {
 						System.out.println("Availble CPU, machine: " + hostId);
 						String readFromHost = String.valueOf(hostId);
 						allocateMapper(String.valueOf(hostId), mapId,
 								String.valueOf(blockID), readFromHost, job,
 								mc_mp);
-						avaiSlots--;
+						availableSlots--;
 						this.availableSlots.put(String.valueOf(hostId),
-								avaiSlots);
+								availableSlots);
 						allocated = true;
 						Set<String> runningJobIDs = runningJobs.get(hostId);
 						if (runningJobIDs == null) {
@@ -644,7 +644,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 			throws RemoteException {
 		TaskTracker taskTracker;
 		taskTracker = this.registeredTaskTrackers.get(hostId);
-		taskTracker.setReduceNum(reducerNum);
+		taskTracker.setReducerNum(reducerNum);
 		hostMapper.put(hostId, mapId);
 
 		jobMapperHost.put(job.getJobId(), hostMapper);
@@ -652,6 +652,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 
 		taskTracker.startMapper(job.getJobId(), mapId, blockId, readFromHost,
 				job.getMapper(), job.getMapperPath());
+		System.out.println("Mapper");
 		job.setMapper_status(mapId, TASK_STATUS.RUNNING);
 		job.addMapNum();
 		jobId_Job.put(job.getJobId(), job);

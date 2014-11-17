@@ -154,13 +154,13 @@ public class Message implements Serializable{
 	/**
 	 * @return the output_path
 	 */
-	public String getOutput_path() {
+	public String getOutputPath() {
 		return output_path;
 	}
 	/**
 	 * @param output_path the output_path to set
 	 */
-	public void setOutput_path(String output_path) {
+	public void setOutputPath(String output_path) {
 		this.output_path = output_path;
 	}
 	/**

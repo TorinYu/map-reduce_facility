@@ -16,7 +16,7 @@ import com.sun.corba.se.impl.orbutil.closure.Future;
  */
 public interface TaskTracker extends Serializable, Remote{
 	
-	public void setReduceNum(int reduceNum) throws RemoteException;
+	public void setReducerNum(int reduceNum) throws RemoteException;
 	
 	public void heartBeat() throws RemoteException;
 

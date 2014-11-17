@@ -25,7 +25,6 @@ public class IntWritable implements Serializable, Writable {
 	 */
 	@Override
 	public Integer getVal() {
-		// TODO Auto-generated method stub
 		return val;
 	}
 
@@ -36,7 +35,6 @@ public class IntWritable implements Serializable, Writable {
 	 */
 	@Override
 	public void setVal(Object val) {
-		// TODO Auto-generated method stub
 		this.val = (Integer) val;
 	}
 

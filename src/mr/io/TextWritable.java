@@ -15,12 +15,19 @@ public class TextWritable implements Writable{
 	private static final long serialVersionUID = -6761529145767170724L;
 	
 	private String val = null;
+	
+	public TextWritable(Object val) {
+		this.val = (String)val;
+	}
+
+	public TextWritable() {
+	}
+
 	/* (non-Javadoc)
 	 * @see mr.io.Writable#getVal()
 	 */
 	@Override
 	public String getVal() {
-		// TODO Auto-generated method stub
 		return val;
 	}
 
@@ -29,8 +36,12 @@ public class TextWritable implements Writable{
 	 */
 	@Override
 	public void setVal(Object val) {
-		// TODO Auto-generated method stub
 		this.val = (String)val;
+	}
+	
+	@Override
+	public String toString(){
+		return val; 
 	}
 	
 }

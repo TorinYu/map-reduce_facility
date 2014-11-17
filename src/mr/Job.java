@@ -63,7 +63,6 @@ public class Job implements Serializable{
 			Long uuid = Math.abs(UUID.randomUUID().getMostSignificantBits());
             jobId = String.valueOf(uuid);
 		} catch (RemoteException | NotBoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
