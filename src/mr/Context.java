@@ -26,7 +26,7 @@ public class Context {
 
 	private String jobId = null;
 	private String taskId = null;
-	private int reduceNum = 0;
+	private int reducerNum = 0;
 	private TASK_TYPE taskType = null;
 	private int numOfFiles = 0;
 	private String mapContentFilePath = "";
@@ -49,7 +49,7 @@ public class Context {
 			String partitionOutPath, TASK_TYPE type) {
 		this.jobId = jobId;
 		this.taskId = taskId;
-		this.reduceNum = reduceNum;
+		this.reducerNum = reduceNum;
 		this.taskType = type;
 		this.partitionOutPath = partitionOutPath;
 		this.mapContentFilePath = "/tmp/" + taskId + "/tmp/";
@@ -94,7 +94,7 @@ public class Context {
 		}
 
 		HashMap<Integer, BufferedWriter> partitionFiles = new HashMap<Integer, BufferedWriter>();
-		for (int i = 0; i < reduceNum; i++) {
+		for (int i = 0; i < reducerNum; i++) {
 			partitionFiles.put(i, new BufferedWriter(new FileWriter(
 					partitionOutPath + taskId + "#" + i)));
 		}
@@ -104,13 +104,13 @@ public class Context {
 			String key = (String) record.getKey().getVal();
 			String value = (String) record.getValue().iterator().next()
 					.getVal();
-			int partitionId = Math.abs(key.hashCode() % reduceNum);
+			int partitionId = Math.abs(key.hashCode() % reducerNum);
 			String line = key + "\t" + value + "\n";
 			// System.out.println("line to be written is " + line);
 			partitionFiles.get(partitionId).write(line);
 		}
 
-		for (int i = 0; i < reduceNum; i++) {
+		for (int i = 0; i < reducerNum; i++) {
 			partitionFiles.get(i).close();
 		}
 		for (int i = 0; i < numOfFiles; i++) {
@@ -135,6 +135,10 @@ public class Context {
 			if (taskType == TASK_TYPE.Mapper) {
 				// System.out.println(taskType.toString());
 				numOfFiles++;
+			} else {
+				System.out.println("I am writing Reducer!");
+				System.out.println(this.mapContentFilePath);
+
 			}
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
 			Collections.sort(this.mapContent);
@@ -158,8 +162,6 @@ public class Context {
 	 * @param value
 	 */
 	public void write(Writable key, Writable value) {
-		// System.out.println("Write a new record " + key.getVal() + " " +
-		// value.getVal());
 		RecordLine record = new RecordLine(new TextWritable(key.getVal()));
 		record.addValue(value);
 		this.mapContent.add(record);
@@ -202,16 +204,16 @@ public class Context {
 	/**
 	 * @return the reduceNum
 	 */
-	public int getReduceNum() {
-		return reduceNum;
+	public int getReducerNum() {
+		return reducerNum;
 	}
 
 	/**
 	 * @param reduceNum
 	 *            the reduceNum to set
 	 */
-	public void setReduceNum(int reduceNum) {
-		this.reduceNum = reduceNum;
+	public void setReducerNum(int reduceNum) {
+		this.reducerNum = reduceNum;
 	}
 
 	/**

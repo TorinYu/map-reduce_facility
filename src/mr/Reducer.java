@@ -38,17 +38,19 @@ public class Reducer<K1, V1, K2, V2> implements Serializable {
 	}
 
 	public void mergePartition() {
-		File dir = new File(shuffleDir);
-		File[] files = dir.listFiles();
-		for (File file : files) {
-			try {
+		try {
+			System.out.println("ShuffleDir is " + this.shuffleDir);
+			File dir = new File(shuffleDir);
+			File[] files = dir.listFiles();
+			for (File file : files) {
+
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String line = null;
 
 				while ((line = br.readLine()) != null) {
-					//System.out.println("Reducer: " + line);
+					// System.out.println("Reducer: " + line);
 					String[] splits = line.split("\t");
-					if(splits.length < 2){
+					if (splits.length < 2) {
 						continue;
 					}
 					TextWritable key = new TextWritable();
@@ -60,11 +62,11 @@ public class Reducer<K1, V1, K2, V2> implements Serializable {
 					records.add(record);
 				}
 				br.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+
 	}
 
 	public void combineValue() {

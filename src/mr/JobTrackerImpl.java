@@ -145,8 +145,10 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 			job.setJobStatus(JOB_STATUS.RUNNING);
 			jobMap.put(job.getJobId(), job);
 			Set<?> set = mappings.entrySet();
-			if (job.getOutputFilePath() != null)
-				jobIdOutputDir.put(job.getJobId(), job.getOutputFilePath());
+			/*
+			 * if (job.getOutputFilePath() != null)
+			 * jobIdOutputDir.put(job.getJobId(), job.getOutputFilePath());
+			 */
 			System.out.println("Scheduling Job " + job.getJobId());
 			// Hashtable<String, String> host_mp = new Hashtable<String,
 			// String>();
@@ -380,7 +382,8 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 									names.get(j));
 							wTaskTracker.writeStr(wPath + '/' + names.get(j),
 									content);
-							System.out.println("Wrote to path:" + wPath + names.get(j));
+							System.out.println("Wrote to path:" + wPath
+									+ names.get(j));
 						}
 					}
 				}
@@ -435,8 +438,8 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 				String reducerId = jobId + "_r_" + id;
 				Job job = this.jobMap.get(jobId);
 				Class<? extends Reducer> reducer = job.getReducer();
-				String cls_path = job.getReducerPath();
-				tt.startReducer(jobId, reducerId, writePath, reducer, cls_path);
+				String clsPath = job.getReducerPath();
+				tt.startReducer(jobId, reducerId, writePath, reducer, clsPath);
 
 				if (!jobReducerHost.containsKey(jobId)) {
 					jobReducerHost.put(jobId, new Hashtable<String, String>());
@@ -542,18 +545,6 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		sb.append("Reducer: " + job.getReducer().getName() + "\n");
 		sb.append("#Allocated Reducer Instance: " + nReducer + "\n");
 		sb.append("Job status:" + job.getJobStatus().toString());
-		/*
-		 * int nFinishedMapper = 0; for (Map.Entry<String, TASK_STATUS> entry :
-		 * mapperStatus.entrySet()) if (entry.getValue() ==
-		 * TASK_STATUS.FINISHED) nFinishedMapper++; float mapperProgress = 0; if
-		 * (nMapper != 0) mapperProgress = nFinishedMapper/nMapper*100; int
-		 * nFinishedReducer = 0; for (Map.Entry<String, TASK_STATUS> entry :
-		 * reducerStatus.entrySet()) if (entry.getValue() ==
-		 * TASK_STATUS.FINISHED) nFinishedReducer++; float reducerProgress = 0;
-		 * if (nReducer != 0) reducerProgress = nFinishedReducer/nReducer*100;
-		 * sb.append("Progress: Mapper " + (int)mapperProgress + "%\tReducer: "
-		 * + (int)reducerProgress + "%\n");
-		 */
 		return sb.toString();
 	}
 
@@ -656,13 +647,13 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					tt.heartBeat();
 				} catch (RemoteException e) {
 					System.out.println("Warning: TaskTracker on " + machineId
-							+ " has dead");
+							+ "is dead");
 					this.registeredTaskTrackers.remove(machineId);
 					restartJobs(machineId);
 				}
 			}
 			try {
-				TimeUnit.SECONDS.sleep(10);
+				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -737,19 +728,6 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 				avalCPUs++;
 				availableSlots.put(machineId, avalCPUs);
 
-				/*
-				 * @SuppressWarnings("unchecked") HashMap<String, Integer> ret =
-				 * (HashMap<String, Integer>) message .getContent();
-				 */
-				/*
-				 * HashMap<String, HashMap<String, Integer>> host_hash_size =
-				 * job_host_hash_size .get(jobId); /* if (host_hash_size ==
-				 * null) { HashMap<String, HashMap<String, Integer>>
-				 * f_host_hash_size = new HashMap<String, HashMap<String,
-				 * Integer>>(); f_host_hash_size.put(machineId, ret);
-				 * .put(jobId, f_host_hash_size); } else {
-				 * host_hash_size.put(machineId, ret); }
-				 */
 				if (isTaskFinished(jobId, TASK_TYPE.Mapper)) {
 					System.out.println("Mapper Job with JobId " + jobId
 							+ " finished");
@@ -918,7 +896,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 			Entry<String, TaskTracker> entry = (Entry<String, TaskTracker>) iter
 					.next();
 			TaskTracker tt = (TaskTracker) entry.getValue();
-			System.out.println("Terminating TaskTracker ");
+			System.out.println("Terminating TaskTracker!");
 			tt.terminateSelf();
 		}
 		try {

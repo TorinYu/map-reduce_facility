@@ -33,7 +33,7 @@ public class Task implements Callable<Object> {
 	private String taskId = null;
 	private String hostId = null;
 
-	private int reduceNum = 0;
+	private int reducerNum = 0;
 	private String inputPath = null;
 	private String outputPath = null;
 	private int blockId = 0;
@@ -74,7 +74,7 @@ public class Task implements Callable<Object> {
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
-	public Type.TASK_STATUS call() {
+	public Object call() {
 		// System.out.println(type.toString());
 		if (Thread.interrupted()) {
 			return Type.TASK_STATUS.TERMINATED;
@@ -85,8 +85,9 @@ public class Task implements Callable<Object> {
 						.newInstance();
 				String outputPath = "/tmp/" + jobId + "/" + hostId + '/';
 
-				Context context = new Context(jobId, taskId, reduceNum,
+				Context context = new Context(jobId, taskId, reducerNum,
 						outputPath, TASK_TYPE.Mapper);
+				
 
 				DataNode dataNode = nameNode.fetchDataNode(dataNodeId);
 				String content = dataNode.fetchStringBlock(blockId);
@@ -114,9 +115,12 @@ public class Task implements Callable<Object> {
 			Reducer<Writable, Writable, Writable, Writable> reducerClass;
 			try {
 				reducerClass = reducer.newInstance();
-				Context context = new Context(jobId, taskId, reduceNum,
+				Context context = new Context(jobId, taskId, reducerNum,
 						outputPath, TASK_TYPE.Reducer);
 				String inputDir = "/tmp/" + jobId + '/' + hostId + '/';
+				System.out.println("Input Dir is " + inputDir);
+				System.out.println("Output Dir is " + outputPath);
+				
 
 				reducerClass.initialize(inputDir);
 				reducerClass.mergePartition();
@@ -131,12 +135,16 @@ public class Task implements Callable<Object> {
 							.get(i).getValue();
 					reducerClass.reduce(key, values, context);
 				}
+				
+				return inputDir;
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			return Type.TASK_STATUS.FINISHED;
+			return null;
 		}
 
 	}
@@ -176,7 +184,7 @@ public class Task implements Callable<Object> {
 	 * @return the reduceNum
 	 */
 	public int getReduceNum() {
-		return reduceNum;
+		return reducerNum;
 	}
 
 	/**
@@ -184,7 +192,7 @@ public class Task implements Callable<Object> {
 	 *            the reduceNum to set
 	 */
 	public void setReducerNum(int reduceNum) {
-		this.reduceNum = reduceNum;
+		this.reducerNum = reduceNum;
 	}
 
 	/**

@@ -65,7 +65,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	LinkedBlockingQueue<Message> heartbeats = new LinkedBlockingQueue<Message>();
 
 	public TaskTrackerImpl(String mrRegistryHost, int mrPort, String dfsHost,
-			int hdfsPort, int selfPort, int taskId, int reduceNum,
+			int hdfsPort, int selfPort, int taskId, int reducerNum,
 			String inputDir) {
 		try {
 
@@ -79,7 +79,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 					this.mapReduceRegistryHost, this.mapReducePort);
 			this.inputDir = inputDir;
 			jobTracker = (JobTracker) mapReduceRegistry.lookup("JobTracker");
-			this.reducerNum = reduceNum;
+			this.reducerNum = reducerNum;
 			this.port = selfPort;
 
 			this.hostId = String.valueOf(taskId);
@@ -302,7 +302,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	 * @param msg
 	 */
 	private void checkMapper(Message msg) {
-		Future f = msg.getFuture();
+		Future<?> f = msg.getFuture();
 		if (f != null) {
 			if (f.isDone()) {
 				try {
@@ -347,10 +347,13 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	 * @param msg
 	 */
 	private void checkReducer(Message msg) {
-		Future f1 = msg.getFuture();
-		String reducer_id = msg.getTaskId();
-		String output_path = msg.getOutputPath();
+		Future<?> f1 = msg.getFuture();
+		String reducerId = msg.getTaskId();
+		String outputPath = msg.getOutputPath();
+		System.out.println("reducer is " + reducerId);
+		System.out.println("output path is " + outputPath);
 		System.out.println("f1 is null? " + (f1 == null));
+		
 		if (f1 != null) {
 			if (f1.isDone()) {
 				try {
@@ -364,15 +367,17 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 							msg.setFuture(null);
 							jobTracker.checkHeartbeat(msg);
 						}
-						String path = output_path + '/' + reducer_id;
+						String path = outputPath + '/' + reducerId;
+						System.out.println("Path is " + path);
 
 						FileUploader uploader = new FileUploader(
 								hdfsRegistryHost, hdfsPort);
-						uploader.upload(path, 0, (String) f1.get());
+						//uploader.upload(path, 0, (String) f1.get());
+						uploader.upload((String) f1.get(), 0, path);
 						System.out.println("output path:" + path);
-						System.out.println("reducerID:" + reducer_id);
+						System.out.println("reducerID:" + reducerId);
 						System.out.println("Writing to DFS, REDUCER ID:"
-								+ reducer_id);
+								+ reducerId);
 
 						msg.setTaskStat(TASK_STATUS.FINISHED);
 						msg.setFuture(null);
@@ -423,7 +428,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 					}
 			} else {
 				try {
-					TimeUnit.SECONDS.sleep(10);
+					TimeUnit.SECONDS.sleep(1);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

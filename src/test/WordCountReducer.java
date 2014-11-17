@@ -9,7 +9,10 @@ import mr.io.Writable;
 public class WordCountReducer extends
 		Reducer<TextWritable, IntWritable, TextWritable, IntWritable> {
 
-	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3537114852870561802L;
 
 	public void reduce(TextWritable key, Iterable<Writable> values,
 			Context context) {
