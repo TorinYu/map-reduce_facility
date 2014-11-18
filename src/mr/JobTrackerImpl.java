@@ -59,7 +59,8 @@ import dfs.NameNode;
 
 public class JobTrackerImpl implements JobTracker, Runnable {
 
-	private static final long serialVersionUId = 1L;
+	private static final long serialVersionUID = 1L;
+
 	private Registry hdfsRegistry = null;
 	private NameNode nameNode = null;
 
@@ -76,9 +77,6 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 
 	// Information of active TaskTracker with hostId
 	private Hashtable<String, TaskTracker> registeredTaskTrackers = new Hashtable<String, TaskTracker>();
-
-	// Information of JobId and output File dir
-	private Hashtable<String, String> jobIdOutputDir = new Hashtable<String, String>();
 
 	// Information of hostId and available Slots
 	private Hashtable<String, Integer> availableSlots = new Hashtable<String, Integer>();
@@ -575,7 +573,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	/**
 	 * terminate all jobs
 	 */
-	private void terminate_allJobs() {
+	private void terminateAllJobs() {
 		Set<Entry<String, Job>> jobset = jobMap.entrySet();
 		Iterator<Entry<String, Job>> iter = jobset.iterator();
 		while (iter.hasNext()) {
@@ -596,7 +594,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	public void kill() throws RemoteException {
 		if (this.terminated)
 			return;
-		this.terminate_allJobs();
+		this.terminateAllJobs();
 	}
 
 	/**
@@ -738,8 +736,8 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					shuffle(jobId, hostIdHashIds);
 					System.out.println("After Shuffle, hostId_hashIds:"
 							+ hostIdHashIds.toString());
-					startReducer(jobId, this.jobIdOutputDir.get(jobId),
-							hostIdHashIds);
+					startReducer(jobId, this.jobMap.get(jobId)
+							.getOutputFilePath(), hostIdHashIds);
 				}
 			}
 		} else if (message.getTaskType() == TASK_TYPE.Reducer) {
@@ -888,7 +886,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	@Override
 	public void terminate() throws RemoteException {
 		terminated = true;
-		terminate_allJobs();
+		terminateAllJobs();
 		System.out.println("Teminated all running jobs");
 		Set<Entry<String, TaskTracker>> s = registeredTaskTrackers.entrySet();
 		Iterator<Entry<String, TaskTracker>> iter = s.iterator();

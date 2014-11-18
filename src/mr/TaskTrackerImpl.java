@@ -58,7 +58,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 
 	boolean terminated = false;
 
-	HashMap<String, Future> taskFuture = new HashMap<String, Future>();
+	HashMap<String, Future<?>> taskFuture = new HashMap<String, Future<?>>();
 
 	ExecutorService executorService = null;
 
@@ -184,7 +184,6 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 			Task task = new Task(jobId, reducerId, hdfsRegistryHost, hdfsPort);
 			task.setTaskType(Type.TASK_TYPE.Reducer);
 			task.setReducer(reducer);
-			task.setOutputPath(writePath);
 			task.setReducerNum(reducerNum);
 			task.setHostId(hostId);
 			Future<?> f1 = (Future<?>) executorService.submit(task);
@@ -353,7 +352,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		System.out.println("reducer is " + reducerId);
 		System.out.println("output path is " + outputPath);
 		System.out.println("f1 is null? " + (f1 == null));
-		
+
 		if (f1 != null) {
 			if (f1.isDone()) {
 				try {
@@ -372,8 +371,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 
 						FileUploader uploader = new FileUploader(
 								hdfsRegistryHost, hdfsPort);
-						//uploader.upload(path, 0, (String) f1.get());
-						uploader.upload((String) f1.get(), 0, path);
+						uploader.upload((String) f1.get() + reducerId, 0, path);
 						System.out.println("output path:" + path);
 						System.out.println("reducerID:" + reducerId);
 						System.out.println("Writing to DFS, REDUCER ID:"
@@ -412,8 +410,10 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			if (this.terminated)
+			if (this.terminated) {
 				return;
+			}
+
 			Message msg = this.heartbeats.poll();
 			if (msg != null) {
 				if (msg.getTaskType() == TASK_TYPE.Mapper) {

@@ -29,7 +29,7 @@ public class Context {
 	private int reducerNum = 0;
 	private TASK_TYPE taskType = null;
 	private int numOfFiles = 0;
-	private String mapContentFilePath = "";
+	private String filePath = "";
 
 	private String partitionOutPath = "";
 	private int bufferSize = 0;
@@ -52,7 +52,8 @@ public class Context {
 		this.reducerNum = reduceNum;
 		this.taskType = type;
 		this.partitionOutPath = partitionOutPath;
-		this.mapContentFilePath = "/tmp/" + taskId + "/tmp/";
+		this.filePath = "/tmp/" + taskId + "/";
+
 		this.bufferSize = 900;
 		this.mapContent = new ArrayList<RecordLine>(this.bufferSize);
 	}
@@ -65,8 +66,6 @@ public class Context {
 		File writeOutPath = new File(partitionOutPath);
 		if (!writeOutPath.exists()) {
 			boolean made = writeOutPath.mkdirs();
-			// System.out.println("Did we make it? " + made);
-			// System.out.println("Output Path is " + writeOutPath);
 		}
 		if (!mapContent.isEmpty()) {
 			writeToFile();
@@ -74,8 +73,8 @@ public class Context {
 		HashMap<Integer, BufferedReader> mapBufferFiles = new HashMap<Integer, BufferedReader>();
 
 		for (int i = 0; i < numOfFiles; i++) {
-			mapBufferFiles.put(i, new BufferedReader(new FileReader(
-					mapContentFilePath + i)));
+			mapBufferFiles.put(i, new BufferedReader(new FileReader(filePath
+					+ i)));
 		}
 
 		PriorityQueue<RecordLine> records = new PriorityQueue<RecordLine>();
@@ -123,22 +122,17 @@ public class Context {
 	 * write the content to file when buffer is full for Map
 	 */
 	private void writeToFile() {
-		// System.out.println("Entering Write to File");
-
-		File pathFile = new File(mapContentFilePath);
+		File pathFile = new File(filePath);
 		if (!pathFile.exists()) {
 			pathFile.mkdirs();
 		}
 
 		try {
-			File file = new File(mapContentFilePath + numOfFiles);
+			File file = new File(filePath + numOfFiles);
 			if (taskType == TASK_TYPE.Mapper) {
-				// System.out.println(taskType.toString());
 				numOfFiles++;
 			} else {
 				System.out.println("I am writing Reducer!");
-				System.out.println(this.mapContentFilePath);
-
 			}
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
 			Collections.sort(this.mapContent);
@@ -250,7 +244,7 @@ public class Context {
 	 * @return the mapContentFilePath
 	 */
 	public String getMapContentFilePath() {
-		return mapContentFilePath;
+		return filePath;
 	}
 
 	/**
@@ -258,7 +252,7 @@ public class Context {
 	 *            the mapContentFilePath to set
 	 */
 	public void setMapContentFilePath(String mapContentFilePath) {
-		this.mapContentFilePath = mapContentFilePath;
+		this.filePath = mapContentFilePath;
 	}
 
 	/**

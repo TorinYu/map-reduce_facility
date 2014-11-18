@@ -35,7 +35,7 @@ public class Task implements Callable<Object> {
 
 	private int reducerNum = 0;
 	private String inputPath = null;
-	private String outputPath = null;
+
 	private int blockId = 0;
 	private int dataNodeId = 0;
 
@@ -48,17 +48,14 @@ public class Task implements Callable<Object> {
 	}
 
 	String readDir = null;
-
 	Type.TASK_TYPE type = null;
-
 	NameNode nameNode = null;
-
 	Type.TASK_TYPE taskType = null;
 	Registry hdfsRegistry = null;
 
-	public Task(String job_id, String task_id, String host, int port) {
-		this.jobId = job_id;
-		this.taskId = task_id;
+	public Task(String jobId, String taskId, String host, int port) {
+		this.jobId = jobId;
+		this.taskId = taskId;
 		try {
 			hdfsRegistry = LocateRegistry.getRegistry(host, port);
 			nameNode = (NameNode) hdfsRegistry.lookup(NAMENODE);
@@ -87,7 +84,6 @@ public class Task implements Callable<Object> {
 
 				Context context = new Context(jobId, taskId, reducerNum,
 						outputPath, TASK_TYPE.Mapper);
-				
 
 				DataNode dataNode = nameNode.fetchDataNode(dataNodeId);
 				String content = dataNode.fetchStringBlock(blockId);
@@ -115,19 +111,23 @@ public class Task implements Callable<Object> {
 			Reducer<Writable, Writable, Writable, Writable> reducerClass;
 			try {
 				reducerClass = reducer.newInstance();
-				Context context = new Context(jobId, taskId, reducerNum,
-						outputPath, TASK_TYPE.Reducer);
 				String inputDir = "/tmp/" + jobId + '/' + hostId + '/';
+
+				Context context = new Context(jobId, taskId, reducerNum,
+						inputDir, TASK_TYPE.Reducer);
 				System.out.println("Input Dir is " + inputDir);
-				System.out.println("Output Dir is " + outputPath);
-				
+				// System.out.println("Output Dir is " + outputPath);
+				String[] iDs = this.taskId.split("_");
+				reducerClass.setId(iDs[iDs.length - 1]);
 
 				reducerClass.initialize(inputDir);
 				reducerClass.mergePartition();
+				reducerClass.combineValue();
 
 				ArrayList<RecordLine> reduceLines = reducerClass
 						.getReduceLines();
 
+				// System.out.println("Reduce Lines: " + reduceLines.size());
 				for (int i = 0; i < reduceLines.size(); i++) {
 					TextWritable key = (TextWritable) reduceLines.get(i)
 							.getKey();
@@ -135,7 +135,7 @@ public class Task implements Callable<Object> {
 							.get(i).getValue();
 					reducerClass.reduce(key, values, context);
 				}
-				
+				context.partionMapContent();
 				return inputDir;
 			} catch (InstantiationException e) {
 				e.printStackTrace();
@@ -290,21 +290,6 @@ public class Task implements Callable<Object> {
 	 */
 	public void setHostId(String hostId) {
 		this.hostId = hostId;
-	}
-
-	/**
-	 * @return the outputPath
-	 */
-	public String getOutputPath() {
-		return outputPath;
-	}
-
-	/**
-	 * @param outputPath
-	 *            the outputPath to set
-	 */
-	public void setOutputPath(String outputPath) {
-		this.outputPath = outputPath;
 	}
 
 	/**

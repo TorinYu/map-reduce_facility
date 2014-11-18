@@ -18,18 +18,17 @@ import mr.io.Writable;
  * @author Nicolas_Yu
  * 
  */
-public class Reducer<K1, V1, K2, V2> implements Serializable {
+public abstract class Reducer<K1, V1, K2, V2> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private String shuffleDir;
 	private PriorityQueue<RecordLine> records;
 	private ArrayList<RecordLine> reduceLines;
+	private String id;
 
-	public void reduce(TextWritable key, Iterable<Writable> values,
-			Context context) {
-
-	}
+	public abstract void reduce(TextWritable key, Iterable<Writable> values,
+			Context context);
 
 	public void initialize(String shuffleDir) {
 		this.shuffleDir = shuffleDir;
@@ -43,7 +42,11 @@ public class Reducer<K1, V1, K2, V2> implements Serializable {
 			File dir = new File(shuffleDir);
 			File[] files = dir.listFiles();
 			for (File file : files) {
-
+				
+				if(!file.getName().endsWith(id)){
+					continue;
+				}
+				
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String line = null;
 
@@ -66,10 +69,10 @@ public class Reducer<K1, V1, K2, V2> implements Serializable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public void combineValue() {
+		System.out.println("Records Size:" + records.size());
 		if (records.isEmpty()) {
 			return;
 		}
@@ -131,6 +134,14 @@ public class Reducer<K1, V1, K2, V2> implements Serializable {
 	 */
 	public void setReduceLines(ArrayList<RecordLine> reduceLines) {
 		this.reduceLines = reduceLines;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 }
