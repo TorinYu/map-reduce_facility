@@ -334,18 +334,33 @@ public class NameNodeImpl implements NameNode {
 	}
 
 	public static void main(String args[]) {
-		int registryPort = Integer.parseInt(args[0]);
-		String dfs = args[1];
-		int replication = Integer.parseInt(args[2]);
-		int blockSize = Integer.parseInt(args[3]);
-		int port = Integer.parseInt(args[4]);
-		int checkInterval = Integer.parseInt(args[5]);
+
+		int registryPort = 0;
+		String dfs = null;
+		int replication = 0;
+		int blockSize = 0;
+		int port = 0;
+		int checkInterval = 0;
+		try {
+			registryPort = Integer.parseInt(args[0]);
+			dfs = args[1];
+			replication = Integer.parseInt(args[2]);
+			blockSize = Integer.parseInt(args[3]);
+			port = Integer.parseInt(args[4]);
+			checkInterval = Integer.parseInt(args[5]);
+		} catch (NumberFormatException e1) {
+			System.out
+					.println("Usage: <registry port> <fs image> <replications> <block size> <self port> <check interval>");
+			System.exit(1);
+		}
+
 		NameNode node = new NameNodeImpl(registryPort, dfs, replication,
 				blockSize, port, checkInterval);
 		try {
 			node.healthCheck();
 		} catch (RemoteException e) {
-			// e.printStackTrace();
+			System.out.println("Server encounters severe exception!");
+			System.exit(1);
 		}
 	}
 }

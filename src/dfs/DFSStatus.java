@@ -18,6 +18,8 @@ public class DFSStatus {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
 			e.printStackTrace();
+		}finally{
+			System.exit(0);
 		}
 
 	}

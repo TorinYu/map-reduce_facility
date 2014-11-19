@@ -35,12 +35,24 @@ public class DataNodeImpl implements DataNode {
 	}
 
 	public static void main(String args[]) {
-		String registryHost = args[0];
-		int registryPort = Integer.parseInt(args[1]);
-		String dir = args[2];
-		int myPort = Integer.parseInt(args[3]);
+		String registryHost = null;
+		int registryPort = 0;
+		String dir = null;
+		int myPort = 0;
+
+		try {
+			registryHost = args[0];
+			registryPort = Integer.parseInt(args[1]);
+			dir = args[2];
+			myPort = Integer.parseInt(args[3]);
+		} catch (Exception e) {
+			System.out
+					.println("Usage:<registry host> <registry port> <dir> <self port>");
+			System.exit(0);
+		}
 		DataNode datanode = new DataNodeImpl(registryHost, registryPort, dir,
 				myPort);
+
 	}
 
 	private void start() {
