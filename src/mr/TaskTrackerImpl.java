@@ -65,7 +65,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	LinkedBlockingQueue<Message> heartbeats = new LinkedBlockingQueue<Message>();
 
 	public TaskTrackerImpl(String mrRegistryHost, int mrPort, String dfsHost,
-			int hdfsPort, int selfPort, int taskId, int reducerNum,
+			int dfsPort, int selfPort, int taskId, int reducerNum,
 			String inputDir) {
 		try {
 
@@ -73,7 +73,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 			this.mapReducePort = mrPort;
 
 			this.hdfsRegistryHost = dfsHost;
-			this.hdfsPort = hdfsPort;
+			this.hdfsPort = dfsPort;
 
 			mapReduceRegistry = LocateRegistry.getRegistry(
 					this.mapReduceRegistryHost, this.mapReducePort);
@@ -371,7 +371,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 
 						FileUploader uploader = new FileUploader(
 								hdfsRegistryHost, hdfsPort);
-						uploader.upload((String) f1.get() + reducerId, 0, path);
+						uploader.upload("/tmp/"+reducerId+"/0", 0, path);
 						System.out.println("output path:" + path);
 						System.out.println("reducerID:" + reducerId);
 						System.out.println("Writing to DFS, REDUCER ID:"

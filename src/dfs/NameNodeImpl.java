@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -24,7 +23,7 @@ import java.util.TreeMap;
 
 public class NameNodeImpl implements NameNode {
 	private Registry registry;
-	private static String DATA = "data";
+
 	private static String NAMENODE = "namenode";
 
 	private int id = 0;
@@ -41,6 +40,7 @@ public class NameNodeImpl implements NameNode {
 	private HashMap<Integer, DataNodeMeta> dataNodeMap;//
 
 	private HashMap<Integer, BlockInfo> blockInfos;
+	private HashMap<Integer, DataNode> dataNodes;
 
 	public NameNodeImpl(int registryPort, String dfs, int replication,
 			int blockSize, int port, int checkInterval) {
@@ -50,6 +50,7 @@ public class NameNodeImpl implements NameNode {
 		this.fileInfos = new HashMap<String, FileInfo>();
 		this.dataNodeMap = new HashMap<Integer, DataNodeMeta>();
 		this.dataNodeHeap = new PriorityQueue<DataNodeMeta>();
+		this.dataNodes = new HashMap<Integer, DataNode>();
 		this.blockInfos = new HashMap<Integer, BlockInfo>();
 		this.interval = checkInterval;
 		this.isTerminating = false;
@@ -77,36 +78,19 @@ public class NameNodeImpl implements NameNode {
 	public int register(DataNode node) throws RemoteException {
 		synchronized (this) {
 			id++;
-			try {
-				registry.bind(DATA + id, node);
-				DataNodeMeta meta = new DataNodeMeta(id);
-				meta.setState(true);
-				this.dataNodeHeap.add(meta);
-				this.dataNodeMap.put(id, meta);
-				System.out.println("Register DataNode #" + id);
-			} catch (AccessException e) {
-				e.printStackTrace();
-				return -1;
-			} catch (RemoteException e) {
-				e.printStackTrace();
-				return -1;
-			} catch (AlreadyBoundException e) {
-				e.printStackTrace();
-				return -1;
-			}
+			this.dataNodes.put(id, node);
+			DataNodeMeta meta = new DataNodeMeta(id);
+			meta.setState(true);
+			this.dataNodeHeap.add(meta);
+			this.dataNodeMap.put(id, meta);
+			System.out.println("Register DataNode #" + id);
 			return id;
 		}
 	}
 
 	@Override
 	public DataNode fetchDataNode(int id) throws RemoteException {
-		DataNode node = null;
-		try {
-			node = (DataNode) registry.lookup(DATA + id);
-		} catch (NotBoundException e) {
-			e.printStackTrace();
-		}
-		return node;
+		return this.dataNodes.get(id);
 	}
 
 	@Override
@@ -361,7 +345,7 @@ public class NameNodeImpl implements NameNode {
 		try {
 			node.healthCheck();
 		} catch (RemoteException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 }
