@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-public class Terminater {
+public class DFSStatus {
 	public static void main(String args[]) {
 		String registryHost = args[0];
 		int registryPort = Integer.parseInt(args[1]);
@@ -13,7 +13,7 @@ public class Terminater {
 			Registry registry = LocateRegistry.getRegistry(registryHost,
 					registryPort);
 			NameNode node = (NameNode) registry.lookup("namenode");
-			node.terminate();
+			System.out.println(node.dfsStatus());
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {

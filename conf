@@ -1,0 +1,14 @@
+NameNode.Host=localhost
+NameNode.RegistryPort=15440
+NameNode.Port=15439
+NameNode.Image=/tmp/FileImage
+NameNode.BlockSize=8192
+NameNode.Interval=3600
+NameNode.Replication=2
+JobTracker.Host=localhost
+JobTracker.RegistryPort=15640
+JobTracker.Port=15639
+JobTracker.Reducer=2
+DataNode.Port=15441
+DataNode.Dir=/tmp/data
+TaskTracker.Port=15641
