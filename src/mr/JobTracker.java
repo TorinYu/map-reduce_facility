@@ -79,6 +79,9 @@ public interface JobTracker extends Serializable, Remote {
 	 * @throws RemoteException
 	 */
 	public void kill(String jobId) throws RemoteException;
+	
+	
+	public void kill() throws RemoteException;
 
 	/**
 	 * @param jobID

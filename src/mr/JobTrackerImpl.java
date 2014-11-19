@@ -591,6 +591,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	/**
 	 * kill all jobs
 	 */
+	@Override
 	public void kill() throws RemoteException {
 		if (this.terminated)
 			return;
@@ -602,6 +603,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * 
 	 * @param jobId
 	 */
+	@Override
 	public void kill(String jobId) throws RemoteException {
 		if (this.terminated)
 			return;
