@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="map-reduce_facility">
+	<property environment="env" />
+	<property name="target" value="1.7" />
+	<property name="source" value="1.7" />
+	<property file="conf" />
+	<path id="map-reduce_facility.classpath">
+		<pathelement location="bin" />
+	</path>
+	<target name="init">
+		<mkdir dir="bin" />
+		<copy includeemptydirs="false" todir="bin">
+			<fileset dir="src">
+				<exclude name="**/*.launch" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="clean">
+		<delete dir="bin" />
+		<delete file="MR.jar" />
+	</target>
+
+	<target name="build" depends="init">
+		<javac srcdir="src" destdir="bin" includeantruntime="false" debug="true" fork="true" />
+	</target>
+	<target name="doc" description="generate documentation">
+		<javadoc sourcepath="${src}" destdir="${doc}" />
+	</target>
+	<target name="jar" depends="build">
+		<jar destfile="MR.jar" basedir="bin">
+		</jar>
+	</target>
+
+	<target name="startNameNode">
+		<java fork="true" classname="dfs.NameNodeImpl">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${NameNode.Image}" />
+			<arg value="${NameNode.Replication}" />
+			<arg value="${NameNode.BlockSize}" />
+			<arg value="${NameNode.Port}" />
+			<arg value="${NameNode.Interval}" />
+		</java>
+	</target>
+
+	<target name="startDataNode">
+		<java fork="true" classname="dfs.DataNodeImpl">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${DataNode.Dir}" />
+			<arg value="${DataNode.Port}" />
+		</java>
+	</target>
+
+	<target name="startJobTracker">
+		<java fork="true" classname="mr.JobTrackerImpl">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${JobTracker.RegistryPort}" />
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${JobTracker.Port}" />
+			<arg value="${JobTracker.Reducer}" />
+		</java>
+	</target>
+
+	<target name="startTaskTracker">
+		<java fork="true" classname="mr.TaskTrackerImpl">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${JobTracker.Host}" />
+			<arg value="${JobTracker.RegistryPort}" />
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${JobTracker.Port}" />
+			<arg value="${arg0}" />
+			<arg value="${DataNode.Dir}" />
+			<arg value="${JobTracker.Reducer}" />
+		</java>
+	</target>
+
+	<target name="terminateDFS">
+		<java fork="true" classname="dfs.DFSTerminator">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+		</java>
+	</target>
+
+	<target name="DFSStatus">
+		<java fork="true" classname="dfs.DFSStatus">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+		</java>
+	</target>
+
+	<target name="FileUploader">
+		<java fork="true" classname="dfs.FileUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${arg0}" />
+			<arg value="${arg1}" />
+			<arg value="${arg2}" />
+		</java>
+	</target>
+
+	<target name="ClassUploader">
+		<java fork="true" classname="dfs.FileUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${arg0}" />
+			<arg value="${arg1}" />
+			<arg value="${arg2}" />
+		</java>
+	</target>
+
+	<target name="Downloader">
+		<java fork="true" classname="dfs.Downloader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${arg0}" />
+			<arg value="${arg1}" />
+			<arg value="${arg2}" />
+		</java>
+	</target>
+
+	<target name="WordCountTest">
+		<echo>Uploading Class Files</echo>
+		<java fork="true" classname="dfs.ClassUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="/bin/test/WordCountMapper.class" />
+			<arg value="2" />
+			<arg value="test/WordCountMapper.class" />
+		</java>
+		<java fork="true" classname="dfs.ClassUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="/bin/test/WordCountReducer.class" />
+			<arg value="2" />
+			<arg value="test/WordCountReducer.class" />
+		</java>
+		<echo>Uploading Files</echo>
+		<java fork="true" classname="dfs.FileUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="localWordCountIn" />
+			<arg value="2" />
+			<arg value="wordCountIn" />
+		</java>
+		<echo>Start...</echo>
+		<java fork="true" classname="test.WordCount">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="wordCountIn" />
+			<arg value="wordCountOut" />
+			<arg value="${JobTracker.Host}" />
+			<arg value="${JobTracker.RegistryPort}" />
+		</java>
+		<echo>Map Reduce Finish!</echo>
+		<echo>DFS Status Shown Below:</echo>
+		<antcall target="DFSStatus" />
+	</target>
+
+
+</project>

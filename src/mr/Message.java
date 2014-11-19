@@ -3,6 +3,7 @@
  */
 package mr;
 
+import java.io.Serializable;
 import java.util.concurrent.Future;
 
 import mr.Type.JOB_STATUS;
@@ -14,7 +15,7 @@ import mr.Type.TASK_TYPE;
  * @author Nicolas_Yu
  *
  */
-public class Message {
+public class Message implements Serializable{
 	private MESSAGE_TYPE messageType = null;
     private TASK_TYPE taskType = null;
     private Object content = null;
@@ -153,13 +154,13 @@ public class Message {
 	/**
 	 * @return the output_path
 	 */
-	public String getOutput_path() {
+	public String getOutputPath() {
 		return output_path;
 	}
 	/**
 	 * @param output_path the output_path to set
 	 */
-	public void setOutput_path(String output_path) {
+	public void setOutputPath(String output_path) {
 		this.output_path = output_path;
 	}
 	/**

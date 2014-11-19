@@ -16,20 +16,19 @@ import mr.io.Writable;
 
 /**
  * @author Nicolas_Yu
- *
+ * 
  */
-public class Reducer <K1, V1, K2, V2> implements Serializable{
+public abstract class Reducer<K1, V1, K2, V2> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private String shuffleDir;
 	private PriorityQueue<RecordLine> records;
 	private ArrayList<RecordLine> reduceLines;
+	private String id;
 
-
-	public void reduce(TextWritable key, Iterable<Writable> values, Context context) {
-
-	}
+	public abstract void reduce(TextWritable key, Iterable<Writable> values,
+			Context context);
 
 	public void initialize(String shuffleDir) {
 		this.shuffleDir = shuffleDir;
@@ -38,15 +37,25 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	}
 
 	public void mergePartition() {
-		File dir = new File(shuffleDir);
-		File[] files = dir.listFiles();
-		for (File file : files) {
-			try {
+		try {
+			System.out.println("ShuffleDir is " + this.shuffleDir);
+			File dir = new File(shuffleDir);
+			File[] files = dir.listFiles();
+			for (File file : files) {
+				
+				if(!file.getName().endsWith(id)){
+					continue;
+				}
+				
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String line = null;
 
 				while ((line = br.readLine()) != null) {
+					// System.out.println("Reducer: " + line);
 					String[] splits = line.split("\t");
+					if (splits.length < 2) {
+						continue;
+					}
 					TextWritable key = new TextWritable();
 					TextWritable value = new TextWritable();
 					key.setVal(splits[0]);
@@ -56,14 +65,14 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 					records.add(record);
 				}
 				br.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
-	
+
 	public void combineValue() {
+		System.out.println("Records Size:" + records.size());
 		if (records.isEmpty()) {
 			return;
 		}
@@ -73,7 +82,7 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 			Writable key = records.peek().getKey();
 			if (key.getVal().hashCode() == currentKey.getVal().hashCode()) {
 				RecordLine temp = records.poll();
-				item.addValue((Writable)temp.getValue().iterator().next());
+				item.addValue((Writable) temp.getValue().iterator().next());
 			} else {
 				reduceLines.add(item);
 				item = records.poll();
@@ -90,7 +99,8 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	}
 
 	/**
-	 * @param shuffleDir the shuffleDir to set
+	 * @param shuffleDir
+	 *            the shuffleDir to set
 	 */
 	public void setShuffleDir(String shuffleDir) {
 		this.shuffleDir = shuffleDir;
@@ -104,7 +114,8 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	}
 
 	/**
-	 * @param records the records to set
+	 * @param records
+	 *            the records to set
 	 */
 	public void setRecords(PriorityQueue<RecordLine> records) {
 		this.records = records;
@@ -118,10 +129,19 @@ public class Reducer <K1, V1, K2, V2> implements Serializable{
 	}
 
 	/**
-	 * @param reduceLines the reduceLines to set
+	 * @param reduceLines
+	 *            the reduceLines to set
 	 */
 	public void setReduceLines(ArrayList<RecordLine> reduceLines) {
 		this.reduceLines = reduceLines;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 }
