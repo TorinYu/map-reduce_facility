@@ -50,7 +50,7 @@ public class ClassUploader {
 			namenode.updateFileInfos(alias, info);
 
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.out.println("Allocated Data Node dies!");
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {

@@ -24,11 +24,13 @@
 
 	<target name="build" depends="init">
 		<javac srcdir="src" destdir="bin" includeantruntime="false" debug="true" fork="true" />
+        <antcall target="jar"/>
 	</target>
+    
 	<target name="doc" description="generate documentation">
 		<javadoc sourcepath="${src}" destdir="${doc}" />
 	</target>
-	<target name="jar" depends="build">
+	<target name="jar">
 		<jar destfile="MR.jar" basedir="bin">
 		</jar>
 	</target>
@@ -188,7 +190,7 @@
 			</classpath>
 			<arg value="${NameNode.Host}" />
 			<arg value="${NameNode.RegistryPort}" />
-			<arg value="localWordCountIn" />
+			<arg value="${WordCountIn}" />
 			<arg value="2" />
 			<arg value="wordCountIn" />
 		</java>

@@ -181,10 +181,16 @@ public class NameNodeImpl implements NameNode {
 		synchronized (this.dataNodeHeap) {
 			List<DataNodeMeta> metas = new ArrayList<>();
 			meta = this.dataNodeHeap.remove();
-			while (meta.getBlockIds().contains(blockId)
+			while ((meta.getBlockIds().contains(blockId) || !meta.isLive())
 					&& !this.dataNodeHeap.isEmpty()) {
 				metas.add(meta);
 				meta = this.dataNodeHeap.remove();
+				try {
+					this.fetchDataNode(meta.getId()).heartBeat();
+				} catch (Exception e) {
+					meta.setState(false);
+					continue;
+				}
 			}
 			if (meta.getBlockIds().contains(blockId)) {
 				// run out of the available nodes.
