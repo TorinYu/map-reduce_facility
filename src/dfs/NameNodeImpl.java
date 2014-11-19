@@ -81,8 +81,12 @@ public class NameNodeImpl implements NameNode {
 			this.dataNodes.put(id, node);
 			DataNodeMeta meta = new DataNodeMeta(id);
 			meta.setState(true);
-			this.dataNodeHeap.add(meta);
-			this.dataNodeMap.put(id, meta);
+			if (!this.dataNodeMap.containsKey(id)) {
+				this.dataNodeHeap.add(meta);
+				this.dataNodeMap.put(id, meta);
+			} else {
+				this.dataNodeMap.get(id).setState(true);
+			}
 			System.out.println("Register DataNode #" + id);
 			return id;
 		}
@@ -219,7 +223,6 @@ public class NameNodeImpl implements NameNode {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(
 					new FileOutputStream(dfsImage));
-			// begin write something important.
 			oos.writeObject(this.fileInfos);
 			oos.writeObject(this.blockInfos);
 			oos.writeObject(this.dataNodeMap);
@@ -273,7 +276,6 @@ public class NameNodeImpl implements NameNode {
 					.entrySet()) {
 				this.dataNodeHeap.add(entry.getValue());
 			}
-
 			ois.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
