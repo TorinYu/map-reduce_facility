@@ -246,6 +246,58 @@
 		<antcall target="DFSStatus" />
 	</target>
 
+	<target name="GraphMining">
+		<echo>Uploading Class Files</echo>
+		<java fork="true" classname="dfs.ClassUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="/bin/graph/GraphMapper.class" />
+			<arg value="2" />
+			<arg value="graph/GraphMapper.class" />
+		</java>
+		<java fork="true" classname="dfs.ClassUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="/bin/graph/GraphReducer.class" />
+			<arg value="2" />
+			<arg value="graph/GraphReducer.class" />
+		</java>
+		<echo>Uploading Files</echo>
+		<java fork="true" classname="dfs.FileUploader">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${GraphIn}" />
+			<arg value="2" />
+			<arg value="graphIn" />
+		</java>
+		<echo>Start...</echo>
+		<java fork="true" classname="graph.GraphMining">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="graphIn" />
+			<arg value="graphOut" />
+			<arg value="${JobTracker.Host}" />
+			<arg value="${JobTracker.RegistryPort}" />
+		</java>
+		<echo>MapReduce Finish!</echo>
+		<echo>DFS Status Shown Below:</echo>
+		<antcall target="DFSStatus" />
+	</target>
+
 	<target name="MRMonitor">
 		<java fork="true" classname="mr.MRMonitor">
 			<classpath>
