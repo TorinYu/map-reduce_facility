@@ -16,7 +16,7 @@ public class WordCountMapper extends
 	@Override
 	public void map(TextWritable key, TextWritable value, Context context) {
 		String line = value.toString();
-		System.out.println("Read Line :" + line);
+		//System.out.println("Read Line :" + line);
 		StringTokenizer tokenizer = new StringTokenizer(line);
 		while (tokenizer.hasMoreTokens()) {
 			word.setVal(tokenizer.nextToken());

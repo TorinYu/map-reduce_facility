@@ -257,6 +257,8 @@ public class NameNodeImpl implements NameNode {
 			e.printStackTrace();
 		}
 
+		System.exit(0);
+
 	}
 
 	@SuppressWarnings("unchecked")

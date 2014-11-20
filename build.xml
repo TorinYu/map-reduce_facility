@@ -24,9 +24,9 @@
 
 	<target name="build" depends="init">
 		<javac srcdir="src" destdir="bin" includeantruntime="false" debug="true" fork="true" />
-        <antcall target="jar"/>
+		<antcall target="jar" />
 	</target>
-    
+
 	<target name="doc" description="generate documentation">
 		<javadoc sourcepath="${src}" destdir="${doc}" />
 	</target>
@@ -35,7 +35,7 @@
 		</jar>
 	</target>
 
-	<target name="startNameNode">
+	<target name="NameNode">
 		<java fork="true" classname="dfs.NameNodeImpl">
 			<classpath>
 				<pathelement location="MR.jar" />
@@ -50,7 +50,7 @@
 		</java>
 	</target>
 
-	<target name="startDataNode">
+	<target name="DataNode">
 		<java fork="true" classname="dfs.DataNodeImpl">
 			<classpath>
 				<pathelement location="MR.jar" />
@@ -63,7 +63,21 @@
 		</java>
 	</target>
 
-	<target name="startJobTracker">
+	<target name="MyDataNode">
+		<java fork="true" classname="dfs.DataNodeImpl">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+			<arg value="${DataNode.Dir}" />
+			<arg value="${arg0}" />
+		</java>
+	</target>
+
+
+	<target name="JobTracker">
 		<java fork="true" classname="mr.JobTrackerImpl">
 			<classpath>
 				<pathelement location="MR.jar" />
@@ -77,7 +91,7 @@
 		</java>
 	</target>
 
-	<target name="startTaskTracker">
+	<target name="TaskTracker">
 		<java fork="true" classname="mr.TaskTrackerImpl">
 			<classpath>
 				<pathelement location="MR.jar" />
@@ -87,8 +101,8 @@
 			<arg value="${JobTracker.RegistryPort}" />
 			<arg value="${NameNode.Host}" />
 			<arg value="${NameNode.RegistryPort}" />
-			<arg value="${JobTracker.Port}" />
 			<arg value="${arg0}" />
+			<arg value="${arg1}" />
 			<arg value="${DataNode.Dir}" />
 			<arg value="${JobTracker.Reducer}" />
 		</java>
@@ -158,6 +172,28 @@
 		</java>
 	</target>
 
+	<target name="DFSTerminator">
+		<java fork="true" classname="dfs.DFSTerminator">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+		</java>
+	</target>
+
+	<target name="MRStatus">
+		<java fork="true" classname="dfs.DFSTerminator">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${NameNode.Host}" />
+			<arg value="${NameNode.RegistryPort}" />
+		</java>
+	</target>
+
 	<target name="WordCountTest">
 		<echo>Uploading Class Files</echo>
 		<java fork="true" classname="dfs.ClassUploader">
@@ -209,6 +245,18 @@
 		<echo>DFS Status Shown Below:</echo>
 		<antcall target="DFSStatus" />
 	</target>
+
+	<target name="MRMonitor">
+		<java fork="true" classname="mr.MRMonitor">
+			<classpath>
+				<pathelement location="MR.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<arg value="${JobTracker.Host}" />
+			<arg value="${JobTracker.RegistryPort}" />
+		</java>
+	</target>
+
 
 
 </project>

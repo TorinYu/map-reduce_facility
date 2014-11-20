@@ -15,10 +15,10 @@ public class DFSTerminator {
 			NameNode node = (NameNode) registry.lookup("namenode");
 			node.terminate();
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.out.println("DFS closes!");
 		} catch (NotBoundException e) {
 			e.printStackTrace();
-		}finally{
+		} finally {
 			System.exit(0);
 		}
 
