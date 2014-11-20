@@ -16,12 +16,12 @@ public class GraphReducer extends
 	@Override
 	public void reduce(TextWritable key, Iterable<Writable> values,
 			Context context) {
-		String supporters = "";
 		Iterator<Writable> it = values.iterator();
+		String supporters = "[" + (String) it.next().getVal();
+
 		while (it.hasNext()) {
 			supporters += "," + (String) it.next().getVal();
 		}
-		supporters.replaceFirst(",", "[");
 		supporters += "]";
 		context.write(key, new TextWritable(supporters));
 	}

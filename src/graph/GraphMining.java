@@ -1,8 +1,6 @@
 package graph;
 
 import mr.Job;
-import test.WordCountMapper;
-import test.WordCountReducer;
 
 public class GraphMining {
 	public static void main(String[] args) throws Exception {
@@ -14,8 +12,8 @@ public class GraphMining {
 		job.setOutputFilePath(output);
 		job.setMapperPath("graph/GraphMapper.class");
 		job.setReducerPath("graph/GraphReducer.class");
-		job.setMapper(WordCountMapper.class);
-		job.setReducer(WordCountReducer.class);
+		job.setMapper(GraphMapper.class);
+		job.setReducer(GraphReducer.class);
 		job.submit();
 	}
 }

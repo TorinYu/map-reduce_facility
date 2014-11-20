@@ -142,6 +142,9 @@ public class NameNodeImpl implements NameNode {
 			throw new RemoteException("DFS terminating");
 
 		FileInfo fileInfo = this.fileInfos.get(filename);
+		if (fileInfo == null) {
+			throw new RemoteException("File Does Not Exist!");
+		}
 
 		TreeMap<Integer, List<Integer>> allBlocks = new TreeMap<Integer, List<Integer>>();
 		for (Integer blockId : fileInfo.getBlockIds()) {

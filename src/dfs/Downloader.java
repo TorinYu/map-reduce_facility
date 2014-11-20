@@ -71,13 +71,17 @@ public class Downloader {
 			fos.close();
 
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			System.out.println("File Does Not Exist!");
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			System.out.println("File Does Not Exist!");
 		} catch (NotBoundException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			System.out.println("Could not find registry!");
 		} catch (IOException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			System.out.println("There are I/O Exceptions!");
 		}
 	}
 

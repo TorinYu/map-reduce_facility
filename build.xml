@@ -71,7 +71,7 @@
 			</classpath>
 			<arg value="${NameNode.Host}" />
 			<arg value="${NameNode.RegistryPort}" />
-			<arg value="${DataNode.Dir}" />
+			<arg value="${arg1}" />
 			<arg value="${arg0}" />
 		</java>
 	</target>
