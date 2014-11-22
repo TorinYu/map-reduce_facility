@@ -161,7 +161,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					if (!this.registeredTaskTrackers.containsKey(String
 							.valueOf(hostId)))
 						continue;
-					System.out.println("MachineId:" + hostId.toString());
+					System.out.println("Machine Id:" + hostId.toString());
 					int availableSlots = this.availableSlots.get(String
 							.valueOf(hostId));
 					System.out.println("Aval Slots NUM:" + availableSlots);
