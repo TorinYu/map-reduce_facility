@@ -237,7 +237,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	@Override
 	public void writeStr(String path, String content) {
 		try {
-			File file = new File(path);
+			File file = new File(path.substring(0, path.lastIndexOf("/")));
 			if (!file.exists()) {
 				file.mkdirs();
 			}
