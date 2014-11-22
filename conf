@@ -13,4 +13,4 @@ DataNode.Port=15441
 DataNode.Dir=/tmp/data/
 TaskTracker.Port=15641
 WordCountIn=movie_processed.dat
-GraphIn=web-Google.txt
+GraphIn=wiki-Vote.txt
