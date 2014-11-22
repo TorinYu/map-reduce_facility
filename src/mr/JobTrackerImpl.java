@@ -11,6 +11,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -18,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
@@ -141,6 +143,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 			Map<Integer, List<Integer>> mappings = this.nameNode
 					.getAllBlocks(job.getFileName());
 			job.setJobStatus(JOB_STATUS.RUNNING);
+			job.setReduceNum(this.reducerNum);
 			jobMap.put(job.getJobId(), job);
 			Set<?> set = mappings.entrySet();
 			System.out.println("Scheduling Job " + job.getJobId());
@@ -218,68 +221,34 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	@Override
 	public HashMap<String, List<String>> chooseReducer(String jobId)
 			throws RemoteException {
-		/* partition_res: mapping of machineId and hashedId */
-		HashMap<String, List<String>> partitionResult = new HashMap<String, List<String>>();
-		HashMap<String, HashMap<String, Integer>> host_hash_size = job_host_hash_size
-				.get(jobId);
-		try {
-			System.out.println("Choosing Partition! size: "
-					+ host_hash_size.size());
-		} catch (Exception e) {
-			e.printStackTrace();
+		PriorityQueue<String> hostIds = new PriorityQueue<String>(15,new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return (int)(availableSlots.get(o2) - availableSlots.get(o1)); 
+			}
+		});
+		for (String hostId : registeredTaskTrackers.keySet()) {
+			hostIds.add(hostId);
 		}
-		/* allocate #reducer_ct reducers */
-		for (int i = 0; i < reducerNum; i++) {
-			System.out.println("*****************Reducer #" + i
-					+ "  *****************");
-			TreeMap<Integer, String> priorityQ = new TreeMap<Integer, String>();
-			/* insert each record into a priority queue */
-			for (Entry<String, HashMap<String, Integer>> entry : host_hash_size
-					.entrySet()) {
-				System.out.println("********* Entry: " + entry.toString());
-				Integer size = entry.getValue().get(String.valueOf(i));
-				if (size == null) {
-					size = 0;
-				}
-				priorityQ.put(size, entry.getKey());
-				System.out.println("********* PriorityQ:"
-						+ priorityQ.toString());
+		HashMap<String, List<String>> results = new HashMap<String, List<String>>();
+		for (int i = 0; i < jobMap.get(jobId).reduceNum; i++) {
+			String hostId = hostIds.poll();
+			if (results.containsKey(hostId)) {
+				List<String> hashIds = results.get(hostId);
+				hashIds.add(String.valueOf(i));
+				results.put(hostId, hashIds);
+				
+			} else {
+				List<String> hashIds = new ArrayList<String>();
+				hashIds.add(String.valueOf(i));
+				results.put(hostId, hashIds);
 			}
-			/*
-			 * iteratively get the machine with most records, and check #slots
-			 * available
-			 */
-			Entry<Integer, String> entry = null;
-			String machineId = "";
-			boolean allocated = false;
-			while ((entry = priorityQ.pollLastEntry()) != null) {
-				machineId = entry.getValue();
-				int availCPUs = availableSlots.get(machineId);
-				if (availCPUs > 0) {
-					availCPUs--;
-					availableSlots.put(machineId, availCPUs);
-					allocated = true;
-					break;
-				}
-			}
-			if (!allocated) {
-				/* no idle machine found */
-				String id = chooseSpareMachine();
-				if (!id.equals("")) {
-					machineId = id;
-					int availCPUs = availableSlots.get(machineId);
-					availCPUs--;
-					availableSlots.put(machineId, availCPUs);
-				}
-			}
-			List<String> lst = partitionResult.get(machineId);
-			if (lst == null)
-				lst = new ArrayList<String>();
-			lst.add(String.valueOf(i));
-			partitionResult.put(machineId, lst);
+			availableSlots.put(hostId, availableSlots.get(hostId)-1);
+			hostIds.add(hostId);
 		}
-		System.out.println("PartitionRes:" + partitionResult.toString());
-		return partitionResult;
+		System.out.println(results.toString());
+		return results;
+		
 	}
 
 	/**
@@ -329,7 +298,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 						.get(hostId);
 
 				System.out.println("HashIds : " + hashIds.toString());
-				System.out.println("hostIdsets : " + hostIdsets.toString());
+				System.out.println("hostId Sets : " + hostIdsets.toString());
 
 				String wPath = "/tmp/" + jobId + "/" + hostId + "/";
 				while (hostIter.hasNext()) {
@@ -645,7 +614,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 
 		jobMapperHost.get(job.getJobId()).put(mapId, hostId);
 
-		System.out.println("prepare to start mapper");
+		System.out.println("Prepare to start mapper");
 
 		taskTracker.startMapper(job.getJobId(), mapId, blockId, readFromHost,
 				job.getMapper(), job.getMapperPath());
@@ -698,10 +667,10 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 							+ " finished");
 					HashMap<String, List<String>> hostIdHashIds = this
 							.chooseReducer(jobId);
-					System.out.println("Before Shuffle, hostId_hashIds:"
+					System.out.println("Before Shuffle, hostId HashIds:"
 							+ hostIdHashIds.toString());
 					shuffle(jobId, hostIdHashIds);
-					System.out.println("After Shuffle, hostId_hashIds:"
+					System.out.println("After Shuffle, hostId HashIds:"
 							+ hostIdHashIds.toString());
 					startReducer(jobId, this.jobMap.get(jobId)
 							.getOutputFilePath(), hostIdHashIds);

@@ -110,11 +110,8 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 			TaskTracker stub = (TaskTracker) UnicastRemoteObject.exportObject(
 					this, port);
 			jobTracker.register(hostId, stub);
-
 			Message initialMsg = new Message();
-			Integer avalProcs = new Integer(Runtime.getRuntime()
-					.availableProcessors());
-			System.out.println("Avalible CPU numbers:" + avalProcs.toString());
+			Integer avalProcs = 20; // The default slots on one TaskTracker is 20
 			initialMsg.setAvalProcs(avalProcs);
 			initialMsg.setMessageType(MESSAGE_TYPE.HEARTBEAT);
 			initialMsg.setHostId(hostId);
@@ -223,6 +220,10 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	@Override
 	public void writeStr(String path, String content) {
 		try {
+			File file = new File(path);
+			if (!file.exists()) {
+				file.mkdirs();
+			}
 			BufferedWriter out = new BufferedWriter(new FileWriter(path, true));
 			out.write(content + '\n');
 			out.close();
@@ -305,9 +306,6 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		if (f != null) {
 			if (f.isDone()) {
 				try {
-					System.out.println("F.get() is  "
-							+ (Type.TASK_STATUS) (f.get()));
-
 					if (f.get() == TASK_STATUS.TERMINATED) {
 						msg.setTaskStat(TASK_STATUS.TERMINATED);
 						msg.setFuture(null);
@@ -356,11 +354,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		if (f1 != null) {
 			if (f1.isDone()) {
 				try {
-					System.out.println("f1.get() is null? "
-							+ (f1.get() == null));
 					if (f1.get() != null) {
-						System.out.println("f1.get() is  " + (f1.get()));
-
 						if (f1.get() == TASK_STATUS.TERMINATED) {
 							msg.setTaskStat(TASK_STATUS.TERMINATED);
 							msg.setFuture(null);
@@ -371,7 +365,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 
 						FileUploader uploader = new FileUploader(
 								hdfsRegistryHost, hdfsPort);
-						uploader.upload("/tmp/"+reducerId+"/0", 0, path);
+						uploader.upload("/tmp/" + reducerId + "/0", 0, path);
 						System.out.println("output path:" + path);
 						System.out.println("reducerID:" + reducerId);
 						System.out.println("Writing to DFS, REDUCER ID:"
