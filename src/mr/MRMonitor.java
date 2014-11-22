@@ -23,7 +23,7 @@ public class MRMonitor {
 	private int registryPort;
 
 	/**
-	 * Constructor
+	 * Constructor of MRMonitor
 	 * 
 	 * @param registryHost
 	 *            registry's host
@@ -67,7 +67,7 @@ public class MRMonitor {
 	}
 
 	/**
-	 * Terminate all jobs and JobTracker, TaskTrackers through RMI call
+	 * Terminate all jobs and JobTracker, TaskTrackers
 	 * 
 	 * @throws NotBoundException
 	 * @throws RemoteException
@@ -93,7 +93,7 @@ public class MRMonitor {
 	}
 
 	/**
-	 * Kill a jobs with given job id
+	 * Kill a jobs with using jobId
 	 * 
 	 * @param jobID
 	 *            job's id

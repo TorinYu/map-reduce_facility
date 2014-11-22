@@ -72,7 +72,6 @@ public class Task implements Callable<Object> {
 	 */
 	@Override
 	public Object call() {
-		// System.out.println(type.toString());
 		if (Thread.interrupted()) {
 			return Type.TASK_STATUS.TERMINATED;
 		}
@@ -87,10 +86,8 @@ public class Task implements Callable<Object> {
 
 				DataNode dataNode = nameNode.fetchDataNode(dataNodeId);
 				String content = dataNode.fetchStringBlock(blockId);
-				// System.out.println("Content is " + content);
 				String[] lines = content.split("\n");
 				for (int i = 0; i < lines.length; i++) {
-					// System.out.println("Line " + i + " is " + lines[i]);
 					String line = lines[i];
 					TextWritable key = new TextWritable();
 					TextWritable value = new TextWritable();
@@ -116,7 +113,6 @@ public class Task implements Callable<Object> {
 				Context context = new Context(jobId, taskId, reducerNum,
 						inputDir, TASK_TYPE.Reducer);
 				System.out.println("Input Dir is " + inputDir);
-				// System.out.println("Output Dir is " + outputPath);
 				String[] iDs = this.taskId.split("_");
 				reducerClass.setId(iDs[iDs.length - 1]);
 
@@ -126,8 +122,6 @@ public class Task implements Callable<Object> {
 
 				ArrayList<RecordLine> reduceLines = reducerClass
 						.getReduceLines();
-
-				// System.out.println("Reduce Lines: " + reduceLines.size());
 				for (int i = 0; i < reduceLines.size(); i++) {
 					TextWritable key = (TextWritable) reduceLines.get(i)
 							.getKey();

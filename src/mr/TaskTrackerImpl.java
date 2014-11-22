@@ -64,6 +64,19 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 
 	LinkedBlockingQueue<Message> heartbeats = new LinkedBlockingQueue<Message>();
 
+	
+	/**
+	 * Constructor of TaskTracker 
+	 * 
+	 * @param mrRegistryHost
+	 * @param mrPort
+	 * @param dfsHost
+	 * @param dfsPort
+	 * @param selfPort
+	 * @param taskId
+	 * @param reducerNum
+	 * @param inputDir
+	 */
 	public TaskTrackerImpl(String mrRegistryHost, int mrPort, String dfsHost,
 			int dfsPort, int selfPort, int taskId, int reducerNum,
 			String inputDir) {
@@ -105,6 +118,9 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		System.out.println("Task " + taskID + " terminated");
 	}
 
+	/**
+	 * Initiliaze the taskTracker
+	 */
 	public void initialize() {
 		try {
 			TaskTracker stub = (TaskTracker) UnicastRemoteObject.exportObject(
@@ -217,6 +233,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		}
 	}
 
+
 	@Override
 	public void writeStr(String path, String content) {
 		try {
@@ -235,15 +252,12 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	}
 
 	/**
-	 * read all partitioned filenames from the specified directory based on the
-	 * hashedID
+	 * read all partitioned files from dir based on the hashIds
 	 * 
 	 * @param path
 	 *            DIR to read from
 	 * @param hashID
-	 *            partitions are hashed based on reducer numbers, this ID
-	 *            determines what partitions should be processed by a specific
-	 *            task
+	 *            partitions are hashed based on reducer numbers
 	 */
 	@Override
 	public List<String> readDir(String path, String hashID) {
@@ -296,8 +310,7 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	}
 
 	/**
-	 * mappers are asynchronous, this function checks if mapper is finished or
-	 * terminated
+	 *  checks if mapper is finished or terminated, because of asynchronous
 	 * 
 	 * @param msg
 	 */
@@ -442,7 +455,6 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 	}
 
 	public static void main(String[] args) {
-		/* TaskTracker ID should be the same with the id of the DataNode */
 		String mrRegistryHost = args[0];
 		int mrPort = Integer.valueOf(args[1]);
 		String dfsHost = args[2];

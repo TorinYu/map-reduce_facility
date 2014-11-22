@@ -30,12 +30,19 @@ public abstract class Reducer<K1, V1, K2, V2> implements Serializable {
 	public abstract void reduce(TextWritable key, Iterable<Writable> values,
 			Context context);
 
+	/**
+	 * Initialize the reducer 
+	 * @param shuffleDir
+	 */
 	public void initialize(String shuffleDir) {
 		this.shuffleDir = shuffleDir;
 		records = new PriorityQueue<RecordLine>();
 		reduceLines = new ArrayList<RecordLine>();
 	}
 
+	/**
+	 * Merge partitions from different mapper hosts
+	 */
 	public void mergePartition() {
 		try {
 			System.out.println("ShuffleDir is " + this.shuffleDir);
@@ -51,7 +58,6 @@ public abstract class Reducer<K1, V1, K2, V2> implements Serializable {
 				String line = null;
 
 				while ((line = br.readLine()) != null) {
-					// System.out.println("Reducer: " + line);
 					String[] splits = line.split("\t");
 					if (splits.length < 2) {
 						continue;

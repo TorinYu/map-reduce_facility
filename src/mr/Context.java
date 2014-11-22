@@ -37,7 +37,7 @@ public class Context {
 	private ArrayList<RecordLine> mapContent;
 
 	/**
-	 * Constructor
+	 * Constructor of Context
 	 * 
 	 * @param jobId
 	 * @param taskId
