@@ -143,13 +143,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 			job.setJobStatus(JOB_STATUS.RUNNING);
 			jobMap.put(job.getJobId(), job);
 			Set<?> set = mappings.entrySet();
-			/*
-			 * if (job.getOutputFilePath() != null)
-			 * jobIdOutputDir.put(job.getJobId(), job.getOutputFilePath());
-			 */
 			System.out.println("Scheduling Job " + job.getJobId());
-			// Hashtable<String, String> host_mp = new Hashtable<String,
-			// String>();
 			for (Iterator<?> iter = set.iterator(); iter.hasNext();) {
 				@SuppressWarnings("rawtypes")
 				Entry entry = (Entry) iter.next();
@@ -169,7 +163,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 							.valueOf(hostId));
 					System.out.println("Aval Slots NUM:" + availableSlots);
 					if (availableSlots > 0) {
-						System.out.println("Availble CPU, machine: " + hostId);
+						System.out.println("Availble Slot, machine: " + hostId);
 						String readFromHost = String.valueOf(hostId);
 						allocateMapper(String.valueOf(hostId), mapId,
 								String.valueOf(blockId), readFromHost, job);
@@ -219,27 +213,6 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 
 	/**
 	 * chooseReducer: Sum the sizes of partitions given back by mapper tasks,
-	 * Choose the Top N (N = num of reducers) sizes, for each partition,
-	 * allocate reducers on the machine that has most resources.
-	 * 
-	 * @param jobId
-	 *            job's id
-	 * @return a hashmap of the assignment
-	 * 
-	 *         Eg. We have 2 reducers. Machine A has partition k1 = 1KB, k2 =
-	 *         1MB Machine B has partition k1 = 1MB, k2 = 1GB Machine C has
-	 *         partition k1 = 1GB, k2 = 1TB sum(k1) = 1GB + 1MB + 1KB sum(k2) =
-	 *         1TB + 1GB + 1MB
-	 * 
-	 *         If schedule reducer on A, A has to pull 1MB+1GB, 1GB+1TB files If
-	 *         schedule reducer on B, B has to pull 1KB+1GB, 1MB+1TB files If
-	 *         schedule reducer on C, C has to pull 1KB+1MB, 1MB+1GB files
-	 * 
-	 *         C has the most resources for k1 and k2, Thus we choose to
-	 *         schedule 2 reducers on C.
-	 * */
-
-	/**
 	 * Update: choose it randomly.
 	 */
 	@Override
@@ -273,7 +246,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 						+ priorityQ.toString());
 			}
 			/*
-			 * iteratively get the machine with most records, and check #cpu
+			 * iteratively get the machine with most records, and check #slots
 			 * available
 			 */
 			Entry<Integer, String> entry = null;
@@ -357,9 +330,6 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 
 				System.out.println("HashIds : " + hashIds.toString());
 				System.out.println("hostIdsets : " + hostIdsets.toString());
-
-				// System.out.println("wTaskTracker is null?"
-				// + (wTaskTracker == null)); false
 
 				String wPath = "/tmp/" + jobId + "/" + hostId + "/";
 				while (hostIter.hasNext()) {
@@ -462,7 +432,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * @return
 	 */
 	public boolean isTaskFinished(String jobId, TASK_TYPE tp) {
-		System.out.println("Checking ------------------------");
+		System.out.println("Checking the status of task");
 		Job job = jobMap.get(jobId);
 		HashMap<String, TASK_STATUS> taskStatus = null;
 		if (tp == TASK_TYPE.Mapper)
@@ -529,11 +499,6 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 		Job job = jobMap.get(jobId);
 		int nMapper = job.getMapNum();
 		int nReducer = job.getReduceNum();
-		/*
-		 * Map<String, TASK_STATUS> mapperStatus = job.get_mapperStatus();
-		 * Map<String, TASK_STATUS> reducerStatus = job.get_reducerStatus();
-		 */
-		/* construct status msg */
 		StringBuilder sb = new StringBuilder();
 		sb.append("Job Id: " + jobId + "\n");
 		sb.append("Input File: " + job.getFileName() + "\n");
@@ -852,7 +817,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 */
 	private void terminateReducers(String jobId,
 			HashMap<String, TASK_STATUS> reducerStatus) {
-		System.out.println("----------In terminate_reducers");
+		System.out.println("In terminate_reducers------");
 		Iterator<Entry<String, TASK_STATUS>> riter = reducerStatus.entrySet()
 				.iterator();
 		while (riter.hasNext()) {

@@ -203,7 +203,7 @@
 			</classpath>
 			<arg value="${NameNode.Host}" />
 			<arg value="${NameNode.RegistryPort}" />
-			<arg value="/bin/test/WordCountMapper.class" />
+			<arg value="./bin/test/WordCountMapper.class" />
 			<arg value="2" />
 			<arg value="test/WordCountMapper.class" />
 		</java>
@@ -214,7 +214,7 @@
 			</classpath>
 			<arg value="${NameNode.Host}" />
 			<arg value="${NameNode.RegistryPort}" />
-			<arg value="/bin/test/WordCountReducer.class" />
+			<arg value="./bin/test/WordCountReducer.class" />
 			<arg value="2" />
 			<arg value="test/WordCountReducer.class" />
 		</java>
@@ -255,7 +255,7 @@
 			</classpath>
 			<arg value="${NameNode.Host}" />
 			<arg value="${NameNode.RegistryPort}" />
-			<arg value="/bin/graph/GraphMapper.class" />
+			<arg value="./bin/graph/GraphMapper.class" />
 			<arg value="2" />
 			<arg value="graph/GraphMapper.class" />
 		</java>
@@ -266,7 +266,7 @@
 			</classpath>
 			<arg value="${NameNode.Host}" />
 			<arg value="${NameNode.RegistryPort}" />
-			<arg value="/bin/graph/GraphReducer.class" />
+			<arg value="./bin/graph/GraphReducer.class" />
 			<arg value="2" />
 			<arg value="graph/GraphReducer.class" />
 		</java>

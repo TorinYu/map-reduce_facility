@@ -141,11 +141,9 @@ public class MRMonitor {
 			case "describe":
 				try {
 					if (len == 2) {
-						// monitor.describe(cmds[1]);
-						System.out.println("d jobId");
+						monitor.describe(cmds[1]);
 					} else if (len == 1) {
-						// monitor.describe();
-						System.out.println("d");
+						monitor.describe();
 					} else {
 						printUsage();
 					}
