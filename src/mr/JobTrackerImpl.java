@@ -436,10 +436,10 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 */
 	private void restartJobs(String machineId) throws RemoteException {
 		System.out.println("--------In restart jobs");
-		Set<String> running_jobIds = runningJobs.get(machineId);
+		Set<String> runningJobIds = runningJobs.get(machineId);
 		System.out.println("Running jobIds on broken machine " + machineId
-				+ ":" + running_jobIds.toString());
-		for (String jobId : running_jobIds) {
+				+ ":" + runningJobIds.toString());
+		for (String jobId : runningJobIds) {
 			Job job = this.jobMap.get(jobId);
 			HashMap<String, HashMap<String, Integer>> host_hash_size = job_host_hash_size
 					.get(jobId);
@@ -579,6 +579,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 					System.out.println("Warning: TaskTracker on " + machineId
 							+ "is dead");
 					this.registeredTaskTrackers.remove(machineId);
+					
 					restartJobs(machineId);
 				}
 			}
@@ -735,13 +736,13 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	 * 
 	 * @param jobId
 	 *            Id of job
-	 * @param mapper_status
+	 * @param mapperStatus
 	 *            status of mapper tasks of this job
 	 */
 	private void terminateMappers(String jobId,
-			HashMap<String, TASK_STATUS> mapper_status) {
+			HashMap<String, TASK_STATUS> mapperStatus) {
 		System.out.println("----------In terminate_mappers");
-		Iterator<Entry<String, TASK_STATUS>> miter = mapper_status.entrySet()
+		Iterator<Entry<String, TASK_STATUS>> miter = mapperStatus.entrySet()
 				.iterator();
 		while (miter.hasNext()) {
 			Entry<String, TASK_STATUS> pairs = (Entry<String, TASK_STATUS>) miter
