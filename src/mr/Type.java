@@ -19,9 +19,7 @@ public class Type implements Serializable {
 	}
 	
 	public enum MESSAGE_TYPE {
-		REQ_BLK, REL_BLK, SET_JOB_STATUS, 
-        START_MAPPER, TERMINATE_MAPPER, 
-        HEARTBEAT;
+		REQ_BLK, REL_BLK, SET_JOB_STATUS, START_MAPPER, TERMINATE_MAPPER, HEARTBEAT;
 	}
 	
 	public enum TASK_STATUS {

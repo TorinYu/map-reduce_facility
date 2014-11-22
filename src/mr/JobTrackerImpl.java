@@ -36,7 +36,6 @@ import dfs.NameNode;
  * @author Nicolas_Yu
  *
  */
-//https://www.inkling.com/read/hadoop-definitive-guide-tom-white-3rd/chapter-6/failures
 
 /**
  * 
@@ -93,13 +92,16 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 
 	// Information of JobId, MachineId, partitionId, size
 	HashMap<String, HashMap<String, HashMap<String, Integer>>> job_host_hash_size = new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
-	// jobId //hostId //partitionId size
+
 	private static final String NAMENODE = "namenode";
 
 	/**
 	 * Initialize the JobTracker, create the MR Registry and bind the JobTracker
-	 * 
-	 * @param dfsHost
+	 * @param mrPort 
+	 * @param hdfsRegistryHost 
+	 * @param hdfsPort
+	 * @param jobTrackerPort
+	 * @param reducerNum
 	 */
 	@Override
 	public void initialize(int mrPort, String hdfsRegistryHost, int hdfsPort,
@@ -215,8 +217,9 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * chooseReducer: Sum the sizes of partitions given back by mapper tasks,
-	 * Update: choose it randomly.
+	 * chooseReducer: choose reducer host based on the free Slots in TaskTracker
+	 * 
+	 * @param jobId
 	 */
 	@Override
 	public HashMap<String, List<String>> chooseReducer(String jobId)
@@ -252,7 +255,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * 
+	 * Choose spare machine with many slots
 	 */
 	public String chooseSpareMachine() {
 		Iterator<Entry<String, Integer>> iter = this.availableSlots.entrySet()
@@ -272,8 +275,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * Shuffle partitions among machines, thus to ensure same key goes to same
-	 * reducer
+	 * Shuffle partitions among hosts to make sure same key goes to the same reducer 
 	 * 
 	 * @param jobId
 	 *            job's id
@@ -332,7 +334,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * Get the machine Ids of the given job's mappers
+	 * Get the hostIds of the mappers of given Job
 	 * 
 	 * @param jobId
 	 *            job's id
@@ -351,12 +353,10 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * start reducer task
+	 * Start task of reducer
 	 * 
 	 * @param job_id
-	 *            job's id
 	 * @param write_path
-	 *            path that reducer will write to after reducer phase is over
 	 * @param hostId_hashIds
 	 */
 	@Override
@@ -392,7 +392,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * Determine if task has finished
+	 * Check if mapper/reducer task has finished
 	 * 
 	 * @param jobId
 	 *            Id of the job
@@ -428,7 +428,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * restart jobs when encountered failure
+	 * Restart jobs when taskTracker fails
 	 * 
 	 * @param machineId
 	 *            the Id of machine that was down
@@ -545,9 +545,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Runnable#run()
+	 * Run the healthCheck after the start of JobTracker
 	 */
 	@Override
 	public void run() {
@@ -559,10 +557,8 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * periodically check if TaskTrackers are still alive by sending heartbeat
-	 * request to TaskTrackers
+	 * periodically check if TaskTrackers are still alive by sending heartbeat to taskTracker
 	 * 
-	 * @throws RemoteException
 	 */
 	@Override
 	public void healthCheck() throws RemoteException {
@@ -597,9 +593,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see mr.JobTracker#allocateMapper(java.lang.String, java.lang.String,
-	 * java.lang.String, java.lang.String, mr.Job,
-	 * com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable)
+	 * @see mr.JobTracker#allocateMapper
 	 */
 	@Override
 	public void allocateMapper(String hostId, String mapId, String blockId,
@@ -700,7 +694,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * maintain integrity of running_jobs
+	 * Keep record of running jobs 
 	 * 
 	 * @param jobId
 	 */
@@ -720,7 +714,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * terminate specific job based on jobId
+	 * Terminate specific job using jobId
 	 * 
 	 * @param jobId
 	 */
@@ -737,7 +731,7 @@ public class JobTrackerImpl implements JobTracker, Runnable {
 	}
 
 	/**
-	 * terminate mapper tasks
+	 * Terminate mapper tasks
 	 * 
 	 * @param jobId
 	 *            Id of job

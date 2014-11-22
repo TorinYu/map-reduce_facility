@@ -38,7 +38,7 @@ public interface JobTracker extends Serializable, Remote {
 	public void schedule(Job job) throws RemoteException;
 
 	/**
-	 * Check status of taskTrackers using heart beat
+	 * Check status of taskTrackers using heartbeat
 	 */
 	public void checkHeartbeat(Message message) throws RemoteException;
 
@@ -68,6 +68,16 @@ public interface JobTracker extends Serializable, Remote {
 
 	public void healthCheck() throws RemoteException;
 
+	/**
+	 * Allocate mapper task to host
+	 * 
+	 * @param hostId
+	 * @param mapId
+	 * @param blockId
+	 * @param readFromHost
+	 * @param job
+	 * @throws RemoteException
+	 */
 	public void allocateMapper(String hostId, String mapId, String blockId,
 			String readFromHost, Job job)
 			throws RemoteException;

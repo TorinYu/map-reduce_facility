@@ -21,6 +21,8 @@ public interface TaskTracker extends Serializable, Remote{
 	public void heartBeat() throws RemoteException;
 
 	/**
+	 * read content from file
+	 * 
 	 * @param path
 	 * @param name
 	 * @return
@@ -28,12 +30,16 @@ public interface TaskTracker extends Serializable, Remote{
 	String readStr(String path, String name) throws RemoteException;
 
 	/**
+	 * write content to file
+	 * 
 	 * @param path
 	 * @param content
 	 */
 	void writeFile(String path, byte[] content) throws RemoteException;
 
 	/**
+	 * read hashID files 
+	 * 
 	 * @param path
 	 * @param hashID
 	 * @return
@@ -41,6 +47,8 @@ public interface TaskTracker extends Serializable, Remote{
 	List<String> readDir(String path, String hashID) throws RemoteException;
 
 	/**
+	 * Write content to file
+	 * 
 	 * @param path
 	 * @param content
 	 */
@@ -53,11 +61,15 @@ public interface TaskTracker extends Serializable, Remote{
     void terminate(String taskID) throws RemoteException;
 
 	/**
+	 * Terminate a taskTracker itself
+	 * 
 	 * @throws RemoteException
 	 */
 	void terminateSelf() throws RemoteException;
 
 	/**
+	 * Start reducer task
+	 * 
 	 * @param jobId
 	 * @param reducerId
 	 * @param writePath
@@ -68,6 +80,8 @@ public interface TaskTracker extends Serializable, Remote{
 			Class<? extends Reducer> reducer, String clspath) throws RemoteException;
 
 	/**
+	 * Start mapper task
+	 * 
 	 * @param jobId
 	 * @param mapId
 	 * @param blockId
