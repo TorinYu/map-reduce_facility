@@ -38,9 +38,9 @@ public class FileUploader {
 			System.out.println("Usage: <LocalPath> <replicas> <DFSFileName>");
 			System.exit(-1);
 		}
-		 FileUploader uploader = new FileUploader(registryHost, registryPort);
-		 uploader.upload(path, replicas, filename);
-		
+		FileUploader uploader = new FileUploader(registryHost, registryPort);
+		uploader.upload(path, replicas, filename);
+
 	}
 
 	public void upload(String filePath, int replicas, String alias) {
@@ -55,7 +55,9 @@ public class FileUploader {
 			FileInfo info = namenode.createFile(alias, replicas);
 			if (info == null) {
 				System.out.println("File Already Exists!");
-				System.exit(-1);
+				// System.exit(-1);
+				br.close();
+				throw new RemoteException("File Already Exist!");
 			}
 			String line = "";
 			int size = namenode.getBlockSize();

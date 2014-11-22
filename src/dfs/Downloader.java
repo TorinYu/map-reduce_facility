@@ -58,7 +58,6 @@ public class Downloader {
 				}
 
 				if (content == null) {
-
 					fos.close();
 					File file = new File(path);
 					file.delete();

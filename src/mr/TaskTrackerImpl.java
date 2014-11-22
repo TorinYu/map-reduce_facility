@@ -360,10 +360,6 @@ public class TaskTrackerImpl implements TaskTracker, Runnable {
 		Future<?> f1 = msg.getFuture();
 		String reducerId = msg.getTaskId();
 		String outputPath = msg.getOutputPath();
-		System.out.println("reducer is " + reducerId);
-		System.out.println("output path is " + outputPath);
-		System.out.println("f1 is null? " + (f1 == null));
-
 		if (f1 != null) {
 			if (f1.isDone()) {
 				try {
