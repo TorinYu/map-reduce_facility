@@ -132,7 +132,7 @@ public class Context {
 			if (taskType == TASK_TYPE.Mapper) {
 				numOfFiles++;
 			} else {
-				System.out.println("I am writing Reducer!");
+				//System.out.println("I am writing Reducer!");
 			}
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
 			Collections.sort(this.mapContent);
