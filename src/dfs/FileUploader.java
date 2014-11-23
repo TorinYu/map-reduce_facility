@@ -87,13 +87,14 @@ public class FileUploader {
 			br.close();
 
 		} catch (NotBoundException e) {
-			e.printStackTrace();
+			System.out.println("No such registry");
 		} catch (RemoteException e) {
-			e.printStackTrace();
+
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			System.out.println("No such file");
 		} catch (IOException e) {
-			e.printStackTrace();
+
+			System.out.println("I/O Exception");
 		}
 
 	}
